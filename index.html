@@ -11,24 +11,23 @@
         body.dark-theme { --bg-main: #0f172a; --bg-card: #1e293b; --border: #334155; --text: #f8fafc; --text-muted: #94a3b8; --primary: #38bdf8; --primary-soft: rgba(56, 189, 248, 0.15); --accent: #34d399; --danger: #f87171; --shadow: 0 4px 6px -1px rgba(0,0,0,0.3); }
         * { box-sizing: border-box; margin: 0; padding: 0; transition: background-color 0.15s; }
         
-        /* 🚀 ANTI REFRESH & ANTI ZOOM (Level 2): CSS Native Lock */
         html, body {
-            overscroll-behavior-y: none; /* Mematikan Pull-to-Refresh bawaan browser */
-            touch-action: manipulation;  /* Mematikan fitur Double-Tap untuk Zoom */
+            overscroll-behavior-y: none; 
+            touch-action: manipulation;  
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
             background-color: var(--bg-main); 
             color: var(--text); 
             font-size: 14px; 
-            -webkit-user-select: none; /* (Opsional) Jika ingin teks tidak bisa diblok/copy sembarangan */
+            -webkit-user-select: none; 
             user-select: none;
         }
         
-        /* Buka kembali akses ketik & select untuk inputan */
         input, textarea, select { -webkit-user-select: auto; user-select: auto; }
 
         .app-container { display: none; padding-bottom: 120px; } 
         .login-container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; padding: 20px; }
-        .container { max-width: 600px; margin: 0 auto; padding: 15px; }
+        .container { max-width: 600px; margin: 0 auto; padding: 15px; overflow-x: hidden; /* Mencegah layar goyang saat animasi slide */ }
+        
         .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
         .top-bar h1 { font-size: 1.3rem; color: var(--primary); font-weight: 800; }
         .theme-toggle { background: var(--bg-card); border: 1px solid var(--border); padding: 8px 12px; border-radius: 20px; cursor: pointer; color: var(--text); box-shadow: var(--shadow); font-weight: 600; }
@@ -65,15 +64,33 @@
         .status-UNPAID { background: rgba(248,113,113,0.15); color: var(--danger); }
         .status-PARTIAL { background: rgba(251,191,36,0.15); color: var(--warning); }
         .status-PAID { background: rgba(52,211,153,0.15); color: var(--accent); }
-        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 65px; background-color: var(--bg-card); border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; z-index: 1000; box-shadow: 0 -4px 10px rgba(0,0,0,0.03); }
-        .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); cursor: pointer; font-size: 10px; font-weight: 600; text-decoration: none; flex: 1; text-align: center; }
-        .nav-item.active { color: var(--primary); }
-        .nav-icon { font-size: 1.3rem; margin-bottom: 2px; }
+        
+        /* 🚀 NAVIGASI BAWAH ANIMASI POP & GLOW */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 65px; background-color: var(--bg-card); border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; z-index: 1000; box-shadow: 0 -10px 15px rgba(0,0,0,0.03); }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); cursor: pointer; font-size: 10px; font-weight: 600; text-decoration: none; flex: 1; text-align: center; transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .nav-icon { font-size: 1.3rem; margin-bottom: 2px; transition: all 0.25s ease; }
+        .nav-item.active { color: var(--primary); transform: translateY(-3px) scale(1.05); }
+        .nav-item.active .nav-icon { filter: drop-shadow(0px 3px 5px rgba(2, 132, 199, 0.5)); }
+
+        /* 🚀 ANIMASI TRANSISI HALAMAN SEPERTI APPSHEET / NATIVE iOS */
         .spa-view { display: none; }
-        .spa-view.active { display: block; }
+        .spa-view.active { 
+            display: block; 
+            animation: slideInFade 0.35s cubic-bezier(0.1, 0.9, 0.2, 1) forwards; 
+        }
+
+        @keyframes slideInFade {
+            0% { opacity: 0; transform: translateX(35px); }
+            100% { opacity: 1; transform: translateX(0); }
+        }
+
         .loading-overlay { text-align: center; padding: 20px; color: var(--primary); font-weight: bold; display: none; }
+        
+        /* INDIKATOR OFFLINE */
+        .offline-badge { background: var(--danger); color: white; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; display: none; margin-left:10px; animation: blink 2s infinite; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+
         .profit-text { font-size: 1.8rem; font-weight: 800; color: var(--accent); }
-        .loss-text { color: var(--danger) !important; }
         .captcha-box { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; background: var(--bg-main); padding: 10px; border-radius: 8px; border: 1px dashed var(--primary); }
         .captcha-math { font-size: 1.2rem; font-weight: bold; color: var(--primary); letter-spacing: 2px; }
 
@@ -92,7 +109,7 @@
            <button id="btn-auto-install" class="btn btn-accent" style="display:none; margin-bottom:15px;" onclick="triggerPWAInstall()">📥 Instal Otomatis</button>
            <div id="manual-install-instruction" class="manual-install-box">
                <strong style="color:#0f172a; display:block; margin-bottom:5px;">💡 Cara Instal Manual:</strong>
-               1. Ketuk ikon menu (<b>⋮</b>) atau Share di browser Anda.<br>2. Pilih <b>"Add to Home Screen"</b>.
+               1. Ketuk ikon menu (<b>⋮</b>) atau Share di browser.<br>2. Pilih <b>"Add to Home Screen"</b>.
            </div>
            <button class="btn btn-secondary" style="border:none; color:var(--text-muted); font-size:13px; padding:8px;" onclick="closePWAModal()">Lanjutkan ke Web ➔</button>
        </div>
@@ -112,7 +129,10 @@
 
     <div id="main-app" class="app-container container">
         <div class="top-bar">
-            <h1 id="global-company-title">MRD CRM</h1>
+            <div style="display:flex; align-items:center;">
+                <h1 id="global-company-title">MRD CRM</h1>
+                <span id="offline-indicator" class="offline-badge">⚡ OFFLINE</span>
+            </div>
             <div style="display:flex; gap: 10px;">
                 <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
                 <button class="theme-toggle" style="color: var(--danger);" onclick="doLogout()">🚪</button>
@@ -225,10 +245,15 @@
     const API_URL = "https://script.google.com/macros/s/AKfycbyhoO7fOFvVCUHqtZpdu_kHAynlA5or6dkpHK0eGHtUiDOb4M3EbIllpr4vDapIXKCzWg/exec";
     const APP_LOGO_URL = "https://cdn-icons-png.flaticon.com/512/3003/3003261.png"; 
 
-    // 🚀 ANTI ZOOM (Level 3): Cegah Pinch-to-Zoom di perangkat iOS/Safari jadul yang membandel
-    document.addEventListener('gesturestart', function (e) {
-        e.preventDefault();
-    });
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js').then(reg => {
+                console.log('Service Worker Aktif!', reg);
+            }).catch(err => console.log('SW Gagal:', err));
+        });
+    }
+
+    document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
 
     let deferredPrompt;
 
@@ -236,7 +261,7 @@
         document.getElementById('dynamic-favicon').href = APP_LOGO_URL;
         if(document.getElementById('login-logo')) document.getElementById('login-logo').src = APP_LOGO_URL;
         if(document.getElementById('pwa-modal-logo')) document.getElementById('pwa-modal-logo').src = APP_LOGO_URL;
-        const manifest = { "name": "MRD CRM Enterprise", "short_name": "MRD CRM", "start_url": window.location.href, "display": "standalone", "background_color": "#0f172a", "theme_color": "#0284c7", "icons": [{ "src": APP_LOGO_URL, "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }] };
+        const manifest = { "name": "MRD CRM Enterprise", "short_name": "MRD CRM", "start_url": "./index.html", "display": "standalone", "background_color": "#0f172a", "theme_color": "#0284c7", "icons": [{ "src": APP_LOGO_URL, "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }] };
         document.getElementById('pwa-manifest').href = URL.createObjectURL(new Blob([JSON.stringify(manifest)], {type: 'application/json'}));
     }
 
@@ -281,6 +306,7 @@
     }
 
     function doLogin() {
+        if(!navigator.onLine) return alert("❌ Anda sedang Offline. Harap aktifkan internet untuk Login awal.");
         const u = document.getElementById('log_user').value, p = document.getElementById('log_pass').value, c = parseInt(document.getElementById('log_captcha').value);
         if(c !== captchaAns) { alert("Hasil Captcha Salah!"); generateCaptcha(); return; }
         const btn = document.getElementById('btn-login'); btn.disabled = true; btn.innerText = "Memeriksa...";
@@ -300,21 +326,34 @@
         const oldP = document.getElementById('sec_old').value, newP = document.getElementById('sec_new').value;
         if(!oldP || !newP) return alert("Isi password lengkap!");
         fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "changePassword", data: { username: loggedUser, old_password: oldP, new_password: newP } }) })
-        .then(res => res.json()).then(res => { if(res.success) { alert("Password Diganti! Login ulang."); doLogout(); } else { alert(res.message); } });
+        .then(res => res.json()).then(res => { if(res.success) { alert("Password Diganti! Login ulang."); doLogout(); } else { alert(res.message); } })
+        .catch(() => alert("Tidak bisa mengganti password saat Offline!"));
     }
 
     function toggleTheme() { document.body.classList.toggle('dark-theme'); localStorage.setItem('theme', document.body.classList.contains('dark-theme') ? 'dark' : 'light');}
 
+    // 🚀 LOGIKA TRANSTION TAB: Aktifkan Class Baru agar Animasi CSS Berjalan
     function switchView(viewId, navElement) {
-        document.querySelectorAll('.spa-view').forEach(view => view.classList.remove('active'));
-        document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-        document.getElementById(viewId).classList.add('active');
-        if(navElement) navElement.classList.add('active');
-        if (viewId === 'view-dashboard') renderDashboardStats();
-        if (viewId === 'view-quotation-list') renderQuotationList();
-        if (viewId === 'view-invoice-list') renderInvoiceList();
-        if (viewId === 'view-expense') renderExpenseList();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        // Hapus active dari semua view agar animasinya me-reset
+        document.querySelectorAll('.spa-view').forEach(view => {
+            view.classList.remove('active');
+        });
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        
+        // Sedikit jeda (10 milidetik) agar browser 'sadar' classnya dicabut, lalu dipasang lagi untuk mentrigger animasi
+        setTimeout(() => {
+            document.getElementById(viewId).classList.add('active');
+            if(navElement) navElement.classList.add('active');
+            
+            if (viewId === 'view-dashboard') renderDashboardStats();
+            if (viewId === 'view-quotation-list') renderQuotationList();
+            if (viewId === 'view-invoice-list') renderInvoiceList();
+            if (viewId === 'view-expense') renderExpenseList();
+            
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }, 10);
     }
 
     function safeFormatRupiah(val) {
@@ -329,6 +368,14 @@
         .then(res => res.json()).then(res => {
             if (res.success) {
                 localDB.referenceItems = res.data || [];
+                localStorage.setItem('crm_offline_ref_items', JSON.stringify(localDB.referenceItems));
+                const datalist = document.getElementById('ref_items_list'); datalist.innerHTML = '';
+                localDB.referenceItems.forEach(item => { const opt = document.createElement('option'); opt.value = item.Nama_Item; datalist.appendChild(opt); });
+            }
+        }).catch(() => {
+            const backup = localStorage.getItem('crm_offline_ref_items');
+            if(backup) {
+                localDB.referenceItems = JSON.parse(backup);
                 const datalist = document.getElementById('ref_items_list'); datalist.innerHTML = '';
                 localDB.referenceItems.forEach(item => { const opt = document.createElement('option'); opt.value = item.Nama_Item; datalist.appendChild(opt); });
             }
@@ -369,39 +416,67 @@
 
     function fetchLiveDatabase() {
         document.getElementById('dash-loading').style.display = 'block';
+        document.getElementById('offline-indicator').style.display = 'none';
+        
         fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "fetchDashboardData" }) })
-        .then(res => res.json()).then(res => {
+        .then(res => res.json())
+        .then(res => {
             if (res.success) {
                 localDB.quotations = res.data.quotations || []; localDB.invoices = res.data.invoices || [];
                 localDB.expenses = res.data.expenses || []; localDB.payments = res.data.payments || [];
                 localDB.customers = res.data.customers || []; localDB.stats = res.data.stats || {};
+                
+                localStorage.setItem('crm_offline_db', JSON.stringify(localDB));
+                
                 const cList = document.getElementById('customer_list'); cList.innerHTML = '';
                 localDB.customers.forEach(c => { const opt = document.createElement('option'); opt.value = c.Nama_Klien; cList.appendChild(opt); });
                 renderDashboardStats(); renderQuotationList(); renderInvoiceList(); renderExpenseList();
             }
-        }).finally(() => document.getElementById('dash-loading').style.display = 'none');
+        })
+        .catch(err => {
+            document.getElementById('offline-indicator').style.display = 'block';
+            const backup = localStorage.getItem('crm_offline_db');
+            if(backup) {
+                localDB = JSON.parse(backup);
+                alert("⚠️ KONEKSI TERPUTUS!\nSistem sedang menampilkan data simpanan (Read-Only) dari memori HP Anda.");
+                const cList = document.getElementById('customer_list'); cList.innerHTML = '';
+                localDB.customers.forEach(c => { const opt = document.createElement('option'); opt.value = c.Nama_Klien; cList.appendChild(opt); });
+                renderDashboardStats(); renderQuotationList(); renderInvoiceList(); renderExpenseList();
+            } else {
+                alert("⚠️ Anda Offline dan belum ada riwayat data yang tersimpan di HP ini.");
+            }
+        })
+        .finally(() => document.getElementById('dash-loading').style.display = 'none');
 
         fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getSettings" }) })
         .then(res => res.json()).then(res => {
             if (res.success && res.data) {
                 localDB.settings = res.data;
-                document.getElementById('global-company-title').innerText = localDB.settings.Company_Name || 'MRD CRM';
-                document.getElementById('set_company_name').value = localDB.settings.Company_Name || '';
-                document.getElementById('set_address').value = localDB.settings.Address || '';
-                document.getElementById('set_company_wa').value = localDB.settings.Company_WA || '';
-                document.getElementById('set_company_email').value = localDB.settings.Company_Email || '';
-                document.getElementById('set_company_website').value = localDB.settings.Company_Website || '';
-                document.getElementById('set_bank_name').value = localDB.settings.Bank_Name || '';
-                document.getElementById('set_bank_account').value = localDB.settings.Bank_Account || '';
-                document.getElementById('set_account_holder').value = localDB.settings.Account_Holder || '';
-                document.getElementById('set_wa_api').value = localDB.settings.WA_API || '';
-                document.getElementById('set_wa_session').value = localDB.settings.WA_Session || '';
-                document.getElementById('set_quotation_prologue').value = localDB.settings.Quotation_Prologue || '';
-                document.getElementById('set_invoice_terms').value = localDB.settings.Invoice_Terms || '';
-                document.getElementById('set_os_appid').value = localDB.settings.OneSignal_App_ID || '';
-                document.getElementById('set_os_key').value = localDB.settings.OneSignal_REST_Key || '';
+                localStorage.setItem('crm_offline_settings', JSON.stringify(localDB.settings));
+                populateSettingsForm();
             }
+        }).catch(() => {
+            const backupSet = localStorage.getItem('crm_offline_settings');
+            if(backupSet) { localDB.settings = JSON.parse(backupSet); populateSettingsForm(); }
         });
+    }
+
+    function populateSettingsForm() {
+        document.getElementById('global-company-title').innerText = localDB.settings.Company_Name || 'MRD CRM';
+        document.getElementById('set_company_name').value = localDB.settings.Company_Name || '';
+        document.getElementById('set_address').value = localDB.settings.Address || '';
+        document.getElementById('set_company_wa').value = localDB.settings.Company_WA || '';
+        document.getElementById('set_company_email').value = localDB.settings.Company_Email || '';
+        document.getElementById('set_company_website').value = localDB.settings.Company_Website || '';
+        document.getElementById('set_bank_name').value = localDB.settings.Bank_Name || '';
+        document.getElementById('set_bank_account').value = localDB.settings.Bank_Account || '';
+        document.getElementById('set_account_holder').value = localDB.settings.Account_Holder || '';
+        document.getElementById('set_wa_api').value = localDB.settings.WA_API || '';
+        document.getElementById('set_wa_session').value = localDB.settings.WA_Session || '';
+        document.getElementById('set_quotation_prologue').value = localDB.settings.Quotation_Prologue || '';
+        document.getElementById('set_invoice_terms').value = localDB.settings.Invoice_Terms || '';
+        document.getElementById('set_os_appid').value = localDB.settings.OneSignal_App_ID || '';
+        document.getElementById('set_os_key').value = localDB.settings.OneSignal_REST_Key || '';
     }
 
     function renderDashboardStats() {
@@ -424,19 +499,9 @@
             let actionButtons = '';
             
             if (row.status === 'PENDING') {
-                actionButtons = `
-                    <div class="row" style="margin-top:12px;">
-                        <button class="btn btn-accent btn-sm" onclick="adminModifyStatus('${row.quote_id}', 'approveQuotation')">🟢 Approve</button>
-                        <button class="btn btn-danger btn-sm" onclick="adminModifyStatus('${row.quote_id}', 'rejectQuotation')">🔴 Reject</button>
-                    </div>
-                `;
+                actionButtons = `<div class="row" style="margin-top:12px;"><button class="btn btn-accent btn-sm" onclick="adminModifyStatus('${row.quote_id}', 'approveQuotation')">🟢 Approve</button><button class="btn btn-danger btn-sm" onclick="adminModifyStatus('${row.quote_id}', 'rejectQuotation')">🔴 Reject</button></div>`;
             } else if (row.status === 'REJECTED') {
-                actionButtons = `
-                    <div class="row" style="margin-top:12px;">
-                        <button class="btn btn-accent btn-sm" onclick="reviseQuotation('${row.quote_id}')">✏️ Revisi Data</button>
-                        <button class="btn btn-secondary btn-sm" style="color:var(--danger); border-color:var(--danger);" onclick="deleteQuotation('${row.quote_id}')">🗑️ Hapus</button>
-                    </div>
-                `;
+                actionButtons = `<div class="row" style="margin-top:12px;"><button class="btn btn-accent btn-sm" onclick="reviseQuotation('${row.quote_id}')">✏️ Revisi Data</button><button class="btn btn-secondary btn-sm" style="color:var(--danger); border-color:var(--danger);" onclick="deleteQuotation('${row.quote_id}')">🗑️ Hapus</button></div>`;
             }
 
             card.innerHTML = `<div class="flex-meta"><div><span class="id-badge">${row.quote_id}</span></div><span class="status-badge status-${row.status}">${row.status}</span></div><div style="font-weight:bold; font-size:15px; margin-bottom:4px; white-space: pre-wrap;">${row.client_name}</div><div style="color:var(--text-muted); font-size:12px; margin-bottom:8px;">Skema: ${row.payment_term} | Rp ${safeFormatRupiah(row.total_amount)}</div><div class="row" style="gap:6px; margin-bottom:0;"><button class="btn btn-secondary btn-sm" onclick="window.open('${row.pdf_url}', '_blank')">📄 Berkas PDF</button></div>${actionButtons}`;
@@ -446,6 +511,7 @@
     function filterQuotations() { renderQuotationList(document.getElementById('search-qto').value); }
 
     function reviseQuotation(quoteId) {
+        if(!navigator.onLine) return alert("❌ Fitur Revisi membutuhkan koneksi internet (Tidak bisa mode Offline).");
         const qto = localDB.quotations.find(q => q.quote_id == quoteId);
         if(!qto) return alert("Gagal mendeteksi dokumen.");
         const nameParts = qto.client_name.split('\n');
@@ -468,6 +534,7 @@
     }
 
     function deleteQuotation(quoteId) {
+        if(!navigator.onLine) return alert("❌ Menghapus file membutuhkan koneksi internet.");
         if(!confirm(`Apakah Anda yakin ingin MENGHAPUS PERMANEN penawaran ${quoteId}?`)) return;
         fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "deleteQuotation", data: { quote_id: quoteId } }) })
         .then(res => res.json()).then(res => { alert("Dokumen dihapus total!"); fetchLiveDatabase(); });
@@ -492,6 +559,7 @@
     function filterInvoices() { renderInvoiceList(document.getElementById('search-inv').value); }
 
     function confirmPartialPayment(invId, maxBayar) {
+        if(!navigator.onLine) return alert("❌ Pencatatan uang masuk butuh koneksi internet (Mencetak PDF Kuitansi).");
         let nominal = prompt(`Masukkan Nominal Uang Masuk (Sisa Tagihan: Rp ${safeFormatRupiah(maxBayar)}):\nKetikan angka tanpa titik/koma:`, maxBayar);
         if (!nominal || isNaN(nominal)) return;
         let keterangan = prompt("Keterangan Pembayaran (Contoh: DP, Cicilan 1, Pelunasan):", "Pembayaran Termin"); if (!keterangan) return;
@@ -513,20 +581,24 @@
     function filterExpenses() { renderExpenseList(document.getElementById('search-exp').value); }
 
     function adminModifyStatus(qId, targetAction) {
+        if(!navigator.onLine) return alert("❌ Aksi ini membutuhkan internet.");
         fetch(API_URL, { method: "POST", body: JSON.stringify({ action: targetAction, data: { quote_id: qId } }) }).then(res => res.json()).then(() => { alert('Status tersimpan!'); fetchLiveDatabase(); });
     }
 
     function saveSettings() {
+        if(!navigator.onLine) return alert("❌ Menyimpan setting membutuhkan internet.");
         const btn = document.getElementById('btn-save-settings'); btn.disabled = true; btn.innerText = "Menyimpan...";
         const payload = { action: "saveSettings", data: { Company_Name: document.getElementById('set_company_name').value, Address: document.getElementById('set_address').value, Company_WA: document.getElementById('set_company_wa').value, Company_Email: document.getElementById('set_company_email').value, Company_Website: document.getElementById('set_company_website').value, Bank_Name: document.getElementById('set_bank_name').value, Bank_Account: document.getElementById('set_bank_account').value, Account_Holder: document.getElementById('set_account_holder').value, WA_API: document.getElementById('set_wa_api').value, WA_Session: document.getElementById('set_wa_session').value, Quotation_Prologue: document.getElementById('set_quotation_prologue').value, Invoice_Terms: document.getElementById('set_invoice_terms').value, OneSignal_App_ID: document.getElementById('set_os_appid').value, OneSignal_REST_Key: document.getElementById('set_os_key').value }};
         fetch(API_URL, { method: "POST", body: JSON.stringify(payload) }).then(res => res.json()).then(() => { alert("Pengaturan disimpan."); fetchLiveDatabase(); }).finally(() => { btn.disabled = false; btn.innerText = "Simpan Profil Global"; });
     }
 
     function submitExpense() {
+        if(!navigator.onLine) return alert("❌ Menyimpan pengeluaran membutuhkan internet.");
         fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "createExpense", data: { Tanggal: new Date().toLocaleDateString('id-ID'), Kategori: document.getElementById('exp_kategori').value, Deskripsi: document.getElementById('exp_deskripsi').value, Nominal: parseFloat(document.getElementById('exp_nominal').value) || 0, Bukti_File_Link: document.getElementById('exp_bukti').value } }) }).then(res => res.json()).then(() => { alert("Tercatat!"); fetchLiveDatabase(); switchView('view-dashboard'); });
     }
 
     function submitQuotation() {
+        if(!navigator.onLine) return alert("❌ Membuat Quotation baru wajib terhubung internet karena sistem harus mencetak PDF.");
         const btn = document.getElementById('btn-submit'); btn.disabled = true; btn.innerText = "Memproses Berkas...";
         const items = [];
         const names = document.querySelectorAll('.item_name'), specs = document.querySelectorAll('.item_spec'), qtys = document.querySelectorAll('.item_qty'), prices = document.querySelectorAll('.item_price');
