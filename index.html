@@ -157,7 +157,7 @@
     </div>
 
     <div id="detail-modal">
-        <div class="detail-header"><button onclick="closePreview()">←</button><h2 style="margin:0; font-size:1.2rem;">Detail Penawaran</h2></div>
+        <div class="detail-header"><button onclick="closePreview()">←</button><h2 id="detail-title" style="margin:0; font-size:1.2rem;">Detail</h2></div>
         <div class="container" id="detail-content" style="padding-top: 20px;"></div>
     </div>
 
@@ -242,7 +242,13 @@
         </div>
 
         <div id="view-expense" class="spa-view">
-            <h2>Anggaran Operasional</h2>
+            <h2>Riwayat Pengeluaran</h2>
+            <div class="search-container"><span class="search-icon">🔍</span><input type="text" id="search-exp" class="search-input" placeholder="Cari pengeluaran..." oninput="filterExpenses()"></div>
+            <div id="exp-list-container"></div>
+        </div>
+
+        <div id="view-input-expense" class="spa-view">
+            <h2>Catat Pengeluaran Baru</h2>
             <div class="card">
                 <div class="form-group"><label>Kategori</label><select id="exp_kategori"><option value="Hardware / Komputer">Hardware / Komputer</option><option value="Server / Hosting / Domain">Server / Hosting</option><option value="Gaji / Fee Developer">Gaji / Fee Developer</option><option value="Operasional / Kantor">Operasional / Kantor</option><option value="Lain-lain">Lain-lain</option></select></div>
                 <div class="form-group"><label>Deskripsi</label><textarea id="exp_deskripsi" placeholder="Keterangan pembelian..." rows="2"></textarea></div>
@@ -250,8 +256,6 @@
                 <div class="form-group"><label>Link Nota</label><input type="text" id="exp_bukti" placeholder="https://..."></div>
                 <button class="btn btn-danger" id="btn-submit-expense" style="margin-bottom:30px;" onclick="submitExpense()">Commit Pengeluaran</button>
             </div>
-            <div class="search-container"><span class="search-icon">🔍</span><input type="text" id="search-exp" class="search-input" placeholder="Cari..." oninput="filterExpenses()"></div>
-            <div id="exp-list-container"></div>
         </div>
 
         <div id="view-settings" class="spa-view">
@@ -274,12 +278,24 @@
                 <div class="form-group"><label>Nama Pemilik Rekening</label><input type="text" id="set_account_holder"></div>
                 
                 <h3 style="margin-top:20px;">Konfigurasi Konten PDF</h3>
-                <div class="form-group"><label>Teks Prolog Penawaran</label><textarea id="set_quotation_prologue" rows="2" placeholder="Bersama surat ini, kami melampirkan..."></textarea></div>
-                <div class="form-group"><label>Ketentuan & Syarat Invoice</label><textarea id="set_invoice_terms" rows="2" placeholder="1. Pembayaran sah jika..."></textarea></div>
+                <div class="form-group">
+                    <label>Teks Prolog Penawaran</label>
+                    <textarea id="set_quotation_prologue" rows="4" style="resize: vertical; line-height: 1.5;" placeholder="Bersama surat ini, kami melampirkan..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Ketentuan & Syarat Invoice (Tekan Enter saja, tanpa \n)</label>
+                    <textarea id="set_invoice_terms" rows="12" style="resize: vertical; font-family: inherit; line-height: 1.5; background-color: #f8fafc;" placeholder="1. Ketentuan Pembayaran&#10;- Uang Muka wajib...&#10;- Pelunasan..."></textarea>
+                </div>
                 
                 <h3 style="margin-top:20px;">Konfigurasi API</h3>
-                <div class="form-group"><label>Endpoint WhatsApp API</label><input type="text" id="set_wa_api" placeholder="https://wa.mrdsolution.my.id"></div>
-                <div class="form-group"><label>Session WhatsApp Aktif</label><input type="text" id="set_wa_session"></div>
+                <div class="form-group">
+                    <label>Endpoint WhatsApp API</label>
+                    <input type="text" id="set_wa_api" placeholder="https://wa.mrdsolution.my.id/api/send-message">
+                </div>
+                <div class="form-group">
+                    <label>Session WhatsApp Aktif</label>
+                    <input type="text" id="set_wa_session">
+                </div>
                 
                 <button class="btn btn-accent" id="btn-save-settings" style="margin-top:15px; margin-bottom:30px;" onclick="saveSettings()">Simpan Profil Global</button>
             </div>
@@ -385,7 +401,8 @@
         const btn = document.getElementById('btn-req-pairing');
         btn.disabled = true; btn.innerText = "Mengambil Kode...";
         
-        const baseUrl = localDB.settings.WA_API || "https://wa.mrdsolution.my.id"; 
+        const rawUrl = localDB.settings.WA_API || "https://wa.mrdsolution.my.id/api/send-message"; 
+        const baseUrl = rawUrl.replace(/\/api\/send-message\/?$/i, "");
         
         fetch(`${baseUrl}/api/get-pairing?key=${key}&session=${session}&phone=${phone}`)
         .then(res => res.json())
@@ -424,12 +441,24 @@
         }).catch(e => console.log("Polling WA err:", e));
     }
 
+    // 🚀 LOGIKA FAB & SWITCH VIEW CERDAS
     function switchView(viewId, navElement) {
         document.querySelectorAll('.spa-view').forEach(view => { view.classList.remove('active'); });
         if(navElement) { document.querySelectorAll('.nav-item').forEach(item => { item.classList.remove('active'); }); }
         
         const fab = document.getElementById('fab-add');
-        if(viewId === 'view-input-quotation' || viewId === 'view-expense' || viewId === 'view-settings') { fab.style.display = 'none'; } else { fab.style.display = 'flex'; }
+        
+        // Atur Gembok FAB Berdasarkan Konteks
+        if(viewId === 'view-input-quotation' || viewId === 'view-input-expense' || viewId === 'view-settings') { 
+            fab.style.display = 'none'; 
+        } else { 
+            fab.style.display = 'flex'; 
+            if (viewId === 'view-expense') {
+                fab.onclick = () => switchView('view-input-expense', null); // FAB ke Input Pengeluaran
+            } else {
+                fab.onclick = () => switchView('view-input-quotation', null); // FAB ke Input Penawaran
+            }
+        }
 
         setTimeout(() => {
             document.getElementById(viewId).classList.add('active');
@@ -482,7 +511,6 @@
         fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getSettings" }) }).then(res => res.json()).then(res => { if (res.success && res.data) { localDB.settings = res.data; localStorage.setItem('crm_offline_settings', JSON.stringify(localDB.settings)); populateSettingsForm(); } }).catch(() => { const backupSet = localStorage.getItem('crm_offline_settings'); if(backupSet) { localDB.settings = JSON.parse(backupSet); populateSettingsForm(); } });
     }
 
-    // 🚀 JS: Load Prolog & Invoice Terms ke Form Settings
     function populateSettingsForm() { 
         document.getElementById('global-company-title').innerText = localDB.settings.Company_Name || 'MRD CRM'; 
         document.getElementById('set_company_name').value = localDB.settings.Company_Name || ''; 
@@ -495,7 +523,7 @@
         document.getElementById('set_account_holder').value = localDB.settings.Account_Holder || '';
         document.getElementById('set_quotation_prologue').value = localDB.settings.Quotation_Prologue || '';
         document.getElementById('set_invoice_terms').value = localDB.settings.Invoice_Terms || '';
-        document.getElementById('set_wa_api').value = localDB.settings.WA_API || ''; 
+        document.getElementById('set_wa_api').value = localDB.settings.WA_API || 'https://wa.mrdsolution.my.id/api/send-message'; 
         document.getElementById('set_wa_session').value = localDB.settings.WA_Session || ''; 
     }
 
@@ -519,6 +547,7 @@
     function showPreview(quoteId) {
         const qto = localDB.quotations.find(q => q.quote_id == quoteId); if(!qto) return;
         const modal = document.getElementById('detail-modal'); const content = document.getElementById('detail-content');
+        document.getElementById('detail-title').innerText = "Detail Penawaran";
         content.innerHTML = `<div class="card" style="border-top: 4px solid var(--primary);"><h3 style="margin-bottom: 5px;">${qto.client_name}</h3><p style="color:var(--text-muted); font-size:12px; margin-bottom:15px;">${quoteId} • WA: ${qto.client_whatsapp || '-'}</p><div style="background:var(--bg-main); padding:10px; border-radius:8px;"><div style="font-size:11px; color:var(--text-muted); margin-bottom:2px;">TOTAL KONTRAK</div><h2 style="color:var(--accent); margin-bottom:0;">Rp ${safeFormatRupiah(qto.total_amount)}</h2></div></div><h3 style="margin-top:20px; margin-bottom:10px;">Daftar Item / Jasa</h3><div id="preview-items-container" style="text-align:center; padding:30px;"><span style="font-size:2rem; animation: blink 1s infinite;">⏳</span><br><span style="font-size:12px; color:var(--text-muted);">Menarik data server...</span></div>`;
         modal.classList.add('open');
         if(navigator.onLine) {
@@ -530,6 +559,32 @@
             }).catch(() => { document.getElementById('preview-items-container').innerHTML = '<div style="color:var(--danger);">Gagal memuat rincian item.</div>'; });
         } else { document.getElementById('preview-items-container').innerHTML = '<div style="color:var(--danger); background:rgba(220,38,38,0.1); padding:15px; border-radius:8px;">⚠️ Rincian item tidak dimuat saat Offline.</div>'; }
     }
+    
+    // 🚀 DETAIL PREVIEW PENGELUARAN
+    function showExpensePreview(expId) {
+        const exp = localDB.expenses.find(e => e.ID_Pengeluaran == expId); 
+        if(!exp) return;
+        const modal = document.getElementById('detail-modal'); 
+        const content = document.getElementById('detail-content');
+        document.getElementById('detail-title').innerText = "Rincian Pengeluaran";
+        
+        let linkBtn = exp.Bukti_File_Link ? `<button class="btn btn-secondary btn-sm" onclick="window.open('${exp.Bukti_File_Link}', '_blank')" style="margin-top:15px; width:100%; border-color:var(--danger); color:var(--danger);">🔗 Buka Bukti / Nota Digital</button>` : '';
+
+        content.innerHTML = `
+            <div class="card" style="border-top: 4px solid var(--danger);">
+                <div style="font-size:11px; font-weight:bold; color:var(--danger); margin-bottom:8px; text-transform:uppercase;">${exp.Kategori}</div>
+                <h3 style="margin-bottom: 5px;">${exp.Deskripsi}</h3>
+                <p style="color:var(--text-muted); font-size:12px; margin-bottom:15px;">Kode: ${exp.ID_Pengeluaran} • Tanggal: ${exp.Tanggal || '-'}</p>
+                <div style="background:var(--bg-main); padding:10px; border-radius:8px;">
+                    <div style="font-size:11px; color:var(--text-muted); margin-bottom:2px;">NOMINAL KELUAR</div>
+                    <h2 style="color:var(--danger); margin-bottom:0;">Rp ${safeFormatRupiah(exp.Nominal)}</h2>
+                </div>
+                ${linkBtn}
+            </div>
+        `;
+        modal.classList.add('open');
+    }
+
     function closePreview() { document.getElementById('detail-modal').classList.remove('open'); }
 
     function reviseQuotation(quoteId) {
@@ -575,12 +630,36 @@
 
     function confirmPartialPayment(invId, maxBayar) { if(!navigator.onLine) return alert("❌ Catat pembayaran butuh internet."); let nominal = prompt(`Nominal Masuk (Sisa: Rp ${safeFormatRupiah(maxBayar)}):\nKetikan angka tanpa titik:`, maxBayar); if (!nominal || isNaN(nominal)) return; let keterangan = prompt("Keterangan:", "Pembayaran Termin"); if (!keterangan) return; fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "confirmPayment", data: { invoice_id: invId, nominal_bayar: nominal, keterangan: keterangan } }) }).then(res => res.json()).then(res => { alert("Kuitansi terkirim!"); fetchLiveDatabase(); }); }
 
-    function renderExpenseList(filterText = "") { const container = document.getElementById('exp-list-container'); container.innerHTML = ''; let filtered = [...localDB.expenses].reverse(); if(filterText.trim()) filtered = filtered.filter(row => String(row.Deskripsi).toLowerCase().includes(filterText.toLowerCase()) || String(row.Kategori).toLowerCase().includes(filterText.toLowerCase())); filtered.forEach(row => { const card = document.createElement('div'); card.className = 'card list-item'; let linkButton = row.Bukti_File_Link ? `<button class="btn btn-secondary btn-sm" onclick="window.open('${row.Bukti_File_Link}', '_blank')">🔗 Buka Nota</button>` : ''; card.innerHTML = `<div class="flex-meta"><span class="id-badge">${row.ID_Pengeluaran}</span><span class="status-badge status-REJECTED">${row.Kategori}</span></div><div style="font-weight:bold;">${row.Deskripsi}</div><div style="color:var(--danger); font-weight:bold; margin:6px 0;">Rp ${safeFormatRupiah(row.Nominal)}</div>${linkButton}`; container.appendChild(card); }); }
+    // 🚀 DAFTAR PENGELUARAN YANG BISA DI KLIK (CARD)
+    function renderExpenseList(filterText = "") { 
+        const container = document.getElementById('exp-list-container'); 
+        container.innerHTML = ''; 
+        let filtered = [...localDB.expenses].reverse(); 
+        if(filterText.trim()) filtered = filtered.filter(row => String(row.Deskripsi).toLowerCase().includes(filterText.toLowerCase()) || String(row.Kategori).toLowerCase().includes(filterText.toLowerCase())); 
+        
+        if (filtered.length === 0) return container.innerHTML = '<div style="text-align:center;padding:20px;">Data pengeluaran tidak ditemukan.</div>';
+
+        filtered.forEach(row => { 
+            const card = document.createElement('div'); 
+            card.className = 'card list-item'; 
+            card.innerHTML = `
+                <div class="list-item-clickable" onclick="showExpensePreview('${row.ID_Pengeluaran}')">
+                    <div class="flex-meta">
+                        <span class="id-badge">${row.ID_Pengeluaran}</span>
+                        <span class="status-badge" style="background:rgba(220,38,38,0.1); color:var(--danger);">${row.Kategori}</span>
+                    </div>
+                    <div style="font-weight:bold; font-size:14px; margin-bottom:4px;">${row.Deskripsi}</div>
+                    <div style="color:var(--danger); font-size:13px; font-weight:bold; margin-bottom:4px;">Rp ${safeFormatRupiah(row.Nominal)}</div>
+                    <div style="color:var(--primary); font-size:11px; font-weight:bold; text-align:right;">🔍 Ketuk untuk detail</div>
+                </div>
+            `; 
+            container.appendChild(card); 
+        }); 
+    }
     function filterExpenses() { renderExpenseList(document.getElementById('search-exp').value); }
 
     function adminModifyStatus(qId, targetAction) { if(!navigator.onLine) return alert("❌ Butuh internet."); fetch(API_URL, { method: "POST", body: JSON.stringify({ action: targetAction, data: { quote_id: qId } }) }).then(res => res.json()).then(() => { alert('Status tersimpan!'); fetchLiveDatabase(); }); }
 
-    // 🚀 JS: Simpan Prolog & Invoice Terms kembali ke Apps Script
     function saveSettings() { 
         if(!navigator.onLine) return alert("❌ Butuh internet."); 
         const btn = document.getElementById('btn-save-settings'); btn.disabled = true; btn.innerText = "Menyimpan..."; 
@@ -604,7 +683,23 @@
         fetch(API_URL, { method: "POST", body: JSON.stringify(payload) }).then(res => res.json()).then(() => { alert("Disimpan."); fetchLiveDatabase(); }).finally(() => { btn.disabled = false; btn.innerText = "Simpan Profil Global"; }); 
     }
 
-    function submitExpense() { if(!navigator.onLine) return alert("❌ Butuh internet."); fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "createExpense", data: { Tanggal: new Date().toLocaleDateString('id-ID'), Kategori: document.getElementById('exp_kategori').value, Deskripsi: document.getElementById('exp_deskripsi').value, Nominal: parseFloat(document.getElementById('exp_nominal').value) || 0, Bukti_File_Link: document.getElementById('exp_bukti').value } }) }).then(res => res.json()).then(() => { alert("Tercatat!"); fetchLiveDatabase(); switchView('view-dashboard'); }); }
+    // 🚀 INPUT PENGELUARAN (KEMBALI KE LIST SETELAH SUBMIT)
+    function submitExpense() { 
+        if(!navigator.onLine) return alert("❌ Butuh internet."); 
+        const btn = document.getElementById('btn-submit-expense');
+        btn.disabled = true; btn.innerText = "Memproses...";
+        fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "createExpense", data: { Tanggal: new Date().toLocaleDateString('id-ID'), Kategori: document.getElementById('exp_kategori').value, Deskripsi: document.getElementById('exp_deskripsi').value, Nominal: parseFloat(document.getElementById('exp_nominal').value) || 0, Bukti_File_Link: document.getElementById('exp_bukti').value } }) })
+        .then(res => res.json()).then(() => { 
+            alert("Pengeluaran Tercatat!"); 
+            document.getElementById('exp_deskripsi').value = '';
+            document.getElementById('exp_nominal').value = '';
+            document.getElementById('exp_bukti').value = '';
+            fetchLiveDatabase(); 
+            // Otomatis pindah ke layar daftar Pengeluaran (Cost)
+            switchView('view-expense', document.querySelectorAll('.nav-item')[3]); 
+        })
+        .finally(() => { btn.disabled = false; btn.innerText = "Commit Pengeluaran"; }); 
+    }
 
     function submitQuotation() {
         if(!navigator.onLine) return alert("❌ Membuat Quotation butuh internet.");
