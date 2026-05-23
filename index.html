@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MRD CRM v7.0 Ultimate</title>
+    <link rel="icon" id="dynamic-favicon" type="image/png" href="">
+    <link rel="manifest" id="pwa-manifest">
+    <style>
+        :root { --bg-main: #f8fafc; --bg-card: #ffffff; --border: #e2e8f0; --text: #0f172a; --text-muted: #64748b; --primary: #0284c7; --primary-soft: #e0f2fe; --accent: #16a34a; --danger: #dc2626; --warning: #ca8a04; --shadow: 0 4px 6px -1px rgba(0,0,0,0.05); --radius: 12px; }
+        body.dark-theme { --bg-main: #0f172a; --bg-card: #1e293b; --border: #334155; --text: #f8fafc; --text-muted: #94a3b8; --primary: #38bdf8; --primary-soft: rgba(56, 189, 248, 0.15); --accent: #34d399; --danger: #f87171; --shadow: 0 4px 6px -1px rgba(0,0,0,0.3); }
+        * { box-sizing: border-box; margin: 0; padding: 0; transition: background-color 0.15s; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg-main); color: var(--text); font-size: 14px; }
+        .app-container { display: none; padding-bottom: 85px; } 
+        .login-container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; padding: 15px; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+        .top-bar h1 { font-size: 1.3rem; color: var(--primary); font-weight: 800; }
+        .theme-toggle { background: var(--bg-card); border: 1px solid var(--border); padding: 8px 12px; border-radius: 20px; cursor: pointer; color: var(--text); box-shadow: var(--shadow); font-weight: 600; }
+        h2 { margin-bottom: 16px; color: var(--primary); font-size: 1.3rem; font-weight: 700; }
+        h3 { margin-bottom: 12px; color: var(--text); font-size: 1.05rem; font-weight: 600; }
+        .card { background-color: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 15px; box-shadow: var(--shadow); width: 100%; max-width: 400px;}
+        .stats-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 15px; }
+        .stat-box { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 12px; text-align: center; box-shadow: var(--shadow); }
+        .stat-label { font-size: 0.85rem; color: var(--text-muted); font-weight: 500; }
+        .stat-val { font-size: 1.25rem; font-weight: bold; margin-top: 4px; }
+        .search-container { margin-bottom: 15px; position: relative; }
+        .search-input { width: 100%; padding: 11px 16px; padding-left: 40px; border: 1px solid var(--border); background-color: var(--bg-card); border-radius: 10px; color: var(--text); font-size: 14px; }
+        .search-input:focus { border-color: var(--primary); outline: none; }
+        .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
+        .form-group { margin-bottom: 14px; width: 100%; }
+        label { display: block; margin-bottom: 6px; color: var(--text-muted); font-weight: 500; }
+        input, textarea, select { width: 100%; padding: 10px; background-color: var(--bg-main); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 14px; font-family: inherit; }
+        input:focus, textarea:focus, select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px var(--primary-soft); }
+        .row { display: flex; gap: 10px; margin-bottom: 10px; }
+        .btn { background-color: var(--primary); color: #ffffff; border: none; padding: 11px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .btn-secondary { background-color: transparent; border: 1px solid var(--border); color: var(--text); }
+        .btn-accent { background-color: var(--accent); color: #ffffff; }
+        .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 6px; width: auto; }
+        .btn-danger { background-color: var(--danger); color: #ffffff; }
+        .list-item { border-bottom: 1px solid var(--border); padding: 14px 0; }
+        .list-item:last-child { border-bottom: none; }
+        .flex-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .id-badge { background: var(--bg-main); padding: 3px 8px; border-radius: 6px; font-size: 11px; border: 1px solid var(--border); font-weight: bold; color: var(--primary); }
+        .status-badge { font-size: 11px; font-weight: bold; padding: 2px 8px; border-radius: 6px; text-transform: uppercase; }
+        .status-PENDING { background: rgba(251,191,36,0.15); color: var(--warning); }
+        .status-APPROVED { background: rgba(52,211,153,0.15); color: var(--accent); }
+        .status-REJECTED { background: rgba(248,113,113,0.15); color: var(--danger); }
+        .status-UNPAID { background: rgba(248,113,113,0.15); color: var(--danger); }
+        .status-PARTIAL { background: rgba(251,191,36,0.15); color: var(--warning); }
+        .status-PAID { background: rgba(52,211,153,0.15); color: var(--accent); }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 65px; background-color: var(--bg-card); border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; z-index: 1000; box-shadow: 0 -4px 10px rgba(0,0,0,0.03); }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); cursor: pointer; font-size: 10px; font-weight: 600; text-decoration: none; flex: 1; text-align: center; }
+        .nav-item.active { color: var(--primary); }
+        .nav-icon { font-size: 1.3rem; margin-bottom: 2px; }
+        .spa-view { display: none; }
+        .spa-view.active { display: block; }
+        .loading-overlay { text-align: center; padding: 20px; color: var(--primary); font-weight: bold; display: none; }
+        .profit-text { font-size: 1.8rem; font-weight: 800; color: var(--accent); }
+        .loss-text { color: var(--danger) !important; }
+        
+        .captcha-box { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; background: var(--bg-main); padding: 10px; border-radius: 8px; border: 1px dashed var(--primary); }
+        .captcha-math { font-size: 1.2rem; font-weight: bold; color: var(--primary); letter-spacing: 2px; }
+    </style>
+</head>
+<body class="light-theme">
+
+    <div id="login-view" class="login-container">
+        <img id="login-logo" src="" alt="App Logo" width="80" style="margin-bottom: 15px; border-radius: 18px; box-shadow: var(--shadow);">
+        
+        <h1 style="color: var(--primary); margin-bottom: 5px;">MRD SaaS</h1>
+        <p style="color: var(--text-muted); margin-bottom: 20px;">Enterprise CRM Portal</p>
+        <div class="card">
+            <div class="form-group"><label>Username</label><input type="text" id="log_user" placeholder="Masukkan username"></div>
+            <div class="form-group"><label>Password</label><input type="password" id="log_pass" placeholder="••••••••"></div>
+            
+            <div class="captcha-box">
+                <span class="captcha-math" id="captcha-display">5 + 3 =</span>
+                <input type="number" id="log_captcha" placeholder="Hasil?" style="width: 80px; text-align: center;">
+            </div>
+
+            <button class="btn btn-accent" id="btn-login" onclick="doLogin()">Autentikasi Aman</button>
+        </div>
+    </div>
+
+    <div id="main-app" class="app-container container">
+        
+        <div class="top-bar">
+            <h1 id="global-company-title">MRD CRM Suite</h1>
+            <div style="display:flex; gap: 10px;">
+                <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+                <button class="theme-toggle" style="color: var(--danger);" onclick="doLogout()">🚪 Keluar</button>
+            </div>
+        </div>
+
+        <div id="view-dashboard" class="spa-view active">
+            <h2>Ringkasan Finansial</h2>
+            <div id="dash-loading" class="loading-overlay">Sinkronisasi data cloud...</div>
+            <div class="stats-grid">
+                <div class="stat-box"><div class="stat-label">Total Penawaran</div><div class="stat-val" id="stat-total-qto" style="color: var(--primary);">0</div></div>
+                <div class="stat-box"><div class="stat-label">Proyek Deal</div><div class="stat-val" id="stat-approved-qto" style="color: var(--accent);">0</div></div>
+                <div class="stat-box"><div class="stat-label">Omset Cair Masuk</div><div class="stat-val" id="stat-total-rev" style="color: var(--accent);">Rp 0</div></div>
+                <div class="stat-box"><div class="stat-label">Total Pengeluaran</div><div class="stat-val" id="stat-total-exp" style="color: var(--danger);">Rp 0</div></div>
+            </div>
+            <div class="card" style="text-align: center; padding: 20px;">
+                <div style="color: var(--text-muted); margin-bottom: 6px; font-weight: 500;">Estimasi Laba Bersih (Net Profit)</div>
+                <div class="profit-text" id="stat-net-profit">Rp 0</div>
+            </div>
+            <button class="btn btn-secondary" onclick="fetchLiveDatabase()">🔄 Tarik Data Terbaru</button>
+        </div>
+
+        <div id="view-quotation-list" class="spa-view">
+            <h2>Database Penawaran</h2>
+            <div class="search-container"><span class="search-icon">🔍</span><input type="text" id="search-qto" class="search-input" placeholder="Cari klien atau ID..." oninput="filterQuotations()"></div>
+            <div id="qto-list-container"></div>
+        </div>
+
+        <div id="view-input-quotation" class="spa-view">
+            <h2>Buat Penawaran Baru</h2>
+            <div class="card">
+                <div class="form-group">
+                    <label>Nama Klien / Instansi (Auto-fill tersedia)</label>
+                    <input type="text" id="client_name" list="customer_list" placeholder="Contoh: PT. Inovasi Bangsa Digital" oninput="handleCustomerSelect(this)">
+                </div>
+                <div class="form-group">
+                    <label>Alamat Klien Lengkap</label>
+                    <textarea id="client_address" placeholder="Gedung Cyber, Jl. Kuningan Barat Raya No.8, Jakarta" style="resize: vertical;" rows="2"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>WhatsApp Klien (Format: 628...)</label>
+                    <input type="number" id="client_whatsapp" placeholder="628123456789">
+                </div>
+                <div class="form-group">
+                    <label>Skema Pembayaran (Custom Termin)</label>
+                    <input type="text" id="payment_term" list="term_list" placeholder="Contoh: DP 40%, Termin I 30%, Pelunasan 30%">
+                    <datalist id="term_list">
+                        <option value="Lunas 100% (Upfront) di Awal">
+                        <option value="DP 50%, Sisa Pelunasan setelah Serah Terima">
+                        <option value="DP 30%, Termin I 30%, Termin II 40%">
+                    </datalist>
+                </div>
+            </div>
+
+            <h3>Rincian Pengadaan & Jasa</h3>
+            <div id="item-container">
+                <div class="card item-row-card">
+                    <div class="form-group" style="margin-bottom: 8px;">
+                        <label>Nama Produk / Jasa</label>
+                        <input type="text" class="item_name" list="ref_items_list" placeholder="Ketik nama produk atau pilih..." oninput="handleItemSelect(this)">
+                    </div>
+                    <div class="row" style="align-items: flex-start;">
+                        <div style="flex: 2;"><label>Spesifikasi</label><textarea class="item_spec" placeholder="Deskripsi kerja..." style="resize: vertical;" rows="2"></textarea></div>
+                        <div style="flex: 0.6;"><label>Qty</label><input type="number" class="item_qty" value="1" oninput="calculateTotal()"></div>
+                        <div style="flex: 1.4;"><label>Harga Satuan</label><input type="number" class="item_price" placeholder="Rp" oninput="calculateTotal()"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row" style="margin-bottom: 15px;"><button class="btn btn-secondary btn-sm" onclick="addItemRow()">➕ Tambah Baris Pengadaan</button></div>
+
+            <div class="card">
+                <div class="row" style="align-items: center; margin-bottom: 0;">
+                    <span style="color: var(--text-muted); font-weight: 600;">Grand Total Penawaran:</span>
+                    <strong id="grandTotal" style="font-size: 1.2rem; color: var(--accent); margin-left: auto;">Rp 0</strong>
+                </div>
+            </div>
+            <button class="btn btn-accent" id="btn-submit" onclick="submitQuotation()">Kirim Dokumen Digital PDF</button>
+        </div>
+
+        <div id="view-invoice-list" class="spa-view">
+            <h2>Riwayat Tagihan Resmi</h2>
+            <div class="search-container"><span class="search-icon">🔍</span><input type="text" id="search-inv" class="search-input" placeholder="Cari tagihan..." oninput="filterInvoices()"></div>
+            <div id="inv-list-container"></div>
+        </div>
+
+        <div id="view-expense" class="spa-view">
+            <h2>Anggaran Operasional</h2>
+            <div class="card">
+                <div class="form-group"><label>Kategori Pembelanjaan</label>
+                    <select id="exp_kategori"><option value="Hardware / Komputer">Hardware / Komputer</option><option value="Server / Hosting / Domain">Server / Hosting</option><option value="Gaji / Fee Developer">Gaji / Fee Developer</option><option value="Operasional / Kantor">Operasional / Kantor</option><option value="Lain-lain">Lain-lain</option></select>
+                </div>
+                <div class="form-group"><label>Deskripsi</label><textarea id="exp_deskripsi" placeholder="Misal: Perpanjangan server VPS..." rows="2"></textarea></div>
+                <div class="form-group"><label>Nominal</label><input type="number" id="exp_nominal" placeholder="12000000"></div>
+                <div class="form-group"><label>Link Bukti File</label><input type="text" id="exp_bukti" placeholder="https://drive.google.com/..."></div>
+                <button class="btn btn-danger" id="btn-submit-expense" onclick="submitExpense()">Commit Pengeluaran</button>
+            </div>
+            <div class="search-container"><span class="search-icon">🔍</span><input type="text" id="search-exp" class="search-input" placeholder="Cari pengeluaran..." oninput="filterExpenses()"></div>
+            <div id="exp-list-container"></div>
+        </div>
+
+        <div id="view-settings" class="spa-view">
+            <h2>Pengaturan Profil & Keamanan</h2>
+            
+            <div class="card">
+                <h3>Kunci Keamanan Akses</h3>
+                <div class="form-group"><label>Password Lama</label><input type="password" id="sec_old"></div>
+                <div class="form-group"><label>Password Baru</label><input type="password" id="sec_new"></div>
+                <button class="btn btn-danger btn-sm" onclick="changePassword()">Ganti Password Akses</button>
+            </div>
+
+            <div class="card">
+                <h3>OneSignal Push Notification Config</h3>
+                <div class="form-group"><label>App ID</label><input type="text" id="set_os_appid" placeholder="xxxx-xxxx-xxxx-xxxx"></div>
+                <div class="form-group"><label>REST API Key</label><input type="text" id="set_os_key" placeholder="NzkyXYZ..."></div>
+            </div>
+
+            <div class="card">
+                <h3>Data Identitas Perusahaan</h3>
+                <div class="form-group"><label>Nama Perusahaan / Agensi</label><input type="text" id="set_company_name"></div>
+                <div class="form-group"><label>Alamat Kantor</label><textarea id="set_address" rows="2"></textarea></div>
+                <div class="form-group"><label>WhatsApp Perusahaan (Tanpa +)</label><input type="number" id="set_company_wa"></div>
+                <div class="form-group"><label>Email Resmi Perusahaan</label><input type="text" id="set_company_email"></div>
+                <div class="form-group"><label>Website Resmi</label><input type="text" id="set_company_website"></div>
+                <div class="form-group"><label>Nama Bank</label><input type="text" id="set_bank_name"></div>
+                <div class="form-group"><label>Nomor Rekening</label><input type="text" id="set_bank_account"></div>
+                <div class="form-group"><label>Nama Pemilik Rekening</label><input type="text" id="set_account_holder"></div>
+                <div class="form-group"><label>Endpoint WhatsApp API</label><input type="text" id="set_wa_api"></div>
+                <div class="form-group"><label>Session WhatsApp Gateway</label><input type="text" id="set_wa_session"></div>
+                <div class="form-group"><label>Teks Prolog Penawaran</label><textarea id="set_quotation_prologue" rows="2"></textarea></div>
+                <div class="form-group"><label>Ketentuan Hukum Invoice</label><textarea id="set_invoice_terms" rows="2"></textarea></div>
+                <button class="btn btn-accent" id="btn-save-settings" onclick="saveSettings()">Simpan Profil Global</button>
+            </div>
+        </div>
+
+        <nav class="bottom-nav">
+            <div class="nav-item active" onclick="switchView('view-dashboard', this)"><span class="nav-icon">📊</span>Home</div>
+            <div class="nav-item" onclick="switchView('view-quotation-list', this)"><span class="nav-icon">📋</span>Qto</div>
+            <div class="nav-item" onclick="switchView('view-input-quotation', this)"><span class="nav-icon">➕</span>Buat</div>
+            <div class="nav-item" onclick="switchView('view-invoice-list', this)"><span class="nav-icon">💳</span>Inv</div>
+            <div class="nav-item" onclick="switchView('view-expense', this)"><span class="nav-icon">📉</span>Cost</div>
+            <div class="nav-item" onclick="switchView('view-settings', this)"><span class="nav-icon">⚙️</span>Set</div>
+        </nav>
+    </div>
+
+    <datalist id="ref_items_list"></datalist>
+    <datalist id="customer_list"></datalist>
+
+    <script>
+    // =======================================================
+    // KONFIGURASI UTAMA APLIKASI
+    // =======================================================
+    // URL API Backend Google Apps Script (Versi Terbaru)
+    const API_URL = "https://script.google.com/macros/s/AKfycbyhoO7fOFvVCUHqtZpdu_kHAynlA5or6dkpHK0eGHtUiDOb4M3EbIllpr4vDapIXKCzWg/exec";
+    
+    // 🎨 GANTI LINK DI BAWAH INI DENGAN LINK LOGO DARI GITHUB/IMGBB ANDA
+    // Pastikan logonya berbentuk persegi, disarankan ukuran 512x512 pixels (PNG)
+    const APP_LOGO_URL = "https://cdn-icons-png.flaticon.com/512/3003/3003261.png"; 
+    // =======================================================
+
+    let localDB = { quotations: [], invoices: [], expenses: [], payments: [], customers: [], referenceItems: [], settings: {}, stats: {} };
+    let captchaAns = 0;
+    let loggedUser = "";
+
+    // 🚀 PWA MANIFEST & LOGO INJECTOR
+    function setupPWA() {
+        // Terapkan ke Favicon (Tab Browser)
+        document.getElementById('dynamic-favicon').href = APP_LOGO_URL;
+        
+        // Terapkan ke Halaman Login
+        const loginLogo = document.getElementById('login-logo');
+        if(loginLogo) loginLogo.src = APP_LOGO_URL;
+
+        // Terapkan ke Manifest App (Bisa Install ke Home Screen)
+        const manifest = {
+            "name": "MRD CRM Enterprise",
+            "short_name": "MRD CRM",
+            "start_url": ".",
+            "display": "standalone",
+            "background_color": "#0f172a",
+            "theme_color": "#0284c7",
+            "icons": [{ "src": APP_LOGO_URL, "sizes": "512x512", "type": "image/png" }]
+        };
+        const blob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
+        document.getElementById('pwa-manifest').href = URL.createObjectURL(blob);
+    }
+
+    // MATH CAPTCHA ENGINE
+    function generateCaptcha() {
+        const a = Math.floor(Math.random() * 10) + 1;
+        const b = Math.floor(Math.random() * 10) + 1;
+        captchaAns = a + b;
+        document.getElementById('captcha-display').innerText = `${a} + ${b} =`;
+    }
+
+    window.addEventListener('DOMContentLoaded', () => { 
+        setupPWA();
+        if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark-theme');
+        
+        // Cek Session
+        const token = localStorage.getItem('crm_token');
+        loggedUser = localStorage.getItem('crm_user');
+        
+        if(token && loggedUser) {
+            document.getElementById('login-view').style.display = 'none';
+            document.getElementById('main-app').style.display = 'block';
+            fetchLiveDatabase(); 
+            fetchReferenceItems();
+        } else {
+            generateCaptcha();
+        }
+    });
+
+    function doLogin() {
+        const u = document.getElementById('log_user').value;
+        const p = document.getElementById('log_pass').value;
+        const c = parseInt(document.getElementById('log_captcha').value);
+
+        if(c !== captchaAns) {
+            alert("Hasil Captcha Salah! Buktikan Anda bukan robot.");
+            generateCaptcha(); return;
+        }
+
+        const btn = document.getElementById('btn-login');
+        btn.disabled = true; btn.innerText = "Memeriksa Sandi...";
+
+        fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "login", data: { username: u, password: p } }) })
+        .then(res => res.json()).then(res => {
+            if(res.success) {
+                localStorage.setItem('crm_token', res.token);
+                localStorage.setItem('crm_user', res.username);
+                loggedUser = res.username;
+                document.getElementById('login-view').style.display = 'none';
+                document.getElementById('main-app').style.display = 'block';
+                fetchLiveDatabase(); fetchReferenceItems();
+            } else {
+                alert(res.message); generateCaptcha();
+            }
+        }).finally(() => { btn.disabled = false; btn.innerText = "Autentikasi Aman"; });
+    }
+
+    function doLogout() {
+        localStorage.removeItem('crm_token'); localStorage.removeItem('crm_user');
+        location.reload();
+    }
+
+    function changePassword() {
+        const oldP = document.getElementById('sec_old').value;
+        const newP = document.getElementById('sec_new').value;
+        if(!oldP || !newP) return alert("Isi lengkap password lama dan baru!");
+
+        fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "changePassword", data: { username: loggedUser, old_password: oldP, new_password: newP } }) })
+        .then(res => res.json()).then(res => {
+            if(res.success) {
+                alert("Password Berhasil Diganti! Silakan login ulang demi keamanan.");
+                doLogout();
+            } else { alert(res.message); }
+        });
+    }
+
+    function toggleTheme() { document.body.classList.toggle('dark-theme'); localStorage.setItem('theme', document.body.classList.contains('dark-theme') ? 'dark' : 'light');}
+
+    function switchView(viewId, navElement) {
+        document.querySelectorAll('.spa-view').forEach(view => view.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+        document.getElementById(viewId).classList.add('active');
+        if(navElement) navElement.classList.add('active');
+        if (viewId === 'view-dashboard') renderDashboardStats();
+        if (viewId === 'view-quotation-list') renderQuotationList();
+        if (viewId === 'view-invoice-list') renderInvoiceList();
+        if (viewId === 'view-expense') renderExpenseList();
+    }
+
+    function safeFormatRupiah(val) {
+        if (val === undefined || val === null) return "0";
+        let num = parseFloat(val);
+        if (isNaN(num)) num = parseFloat(String(val).replace(/\./g, '').replace(/,/g, '.'));
+        return isNaN(num) ? "0" : num.toLocaleString('id-ID');
+    }
+
+    function fetchReferenceItems() {
+        fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getReferenceItems" }) })
+        .then(res => res.json()).then(res => {
+            if (res.success) {
+                localDB.referenceItems = res.data || [];
+                const datalist = document.getElementById('ref_items_list');
+                datalist.innerHTML = '';
+                localDB.referenceItems.forEach(item => { const opt = document.createElement('option'); opt.value = item.Nama_Item; datalist.appendChild(opt); });
+            }
+        });
+    }
+
+    function handleItemSelect(el) {
+        const matchedItem = localDB.referenceItems.find(i => i.Nama_Item === el.value);
+        if (matchedItem) {
+            const rowCard = el.closest('.item-row-card');
+            rowCard.querySelector('.item_spec').value = matchedItem.Deskripsi_Lengkap || '';
+            rowCard.querySelector('.item_price').value = matchedItem.Harga_Satuan || 0;
+            calculateTotal();
+        }
+    }
+
+    function handleCustomerSelect(el) {
+        const matched = localDB.customers.find(i => i.Nama_Klien === el.value);
+        if (matched) {
+            document.getElementById('client_address').value = matched.Alamat || '';
+            document.getElementById('client_whatsapp').value = matched.WhatsApp || '';
+        }
+    }
+
+    function addItemRow() {
+        const container = document.getElementById('item-container');
+        const newRow = document.createElement('div');
+        newRow.className = 'card item-row-card'; newRow.style.marginTop = '10px';
+        newRow.innerHTML = `<div class="form-group" style="margin-bottom: 8px;"><label>Nama Produk / Jasa</label><input type="text" class="item_name" list="ref_items_list" oninput="handleItemSelect(this)"></div><div class="row" style="align-items: flex-start;"><div style="flex: 2;"><label>Spesifikasi</label><textarea class="item_spec" style="resize: vertical;" rows="2"></textarea></div><div style="flex: 0.6;"><label>Qty</label><input type="number" class="item_qty" value="1" oninput="calculateTotal()"></div><div style="flex: 1.4;"><label>Harga Satuan</label><input type="number" class="item_price" oninput="calculateTotal()"></div></div>`;
+        container.appendChild(newRow);
+    }
+
+    function calculateTotal() {
+        let total = 0;
+        const qtys = document.querySelectorAll('.item_qty'), prices = document.querySelectorAll('.item_price');
+        document.querySelectorAll('.item_name').forEach((name, idx) => { total += (parseFloat(qtys[idx].value) || 0) * (parseFloat(prices[idx].value) || 0); });
+        document.getElementById('grandTotal').innerText = "Rp " + total.toLocaleString('id-ID');
+        return total;
+    }
+
+    function fetchLiveDatabase() {
+        document.getElementById('dash-loading').style.display = 'block';
+        fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "fetchDashboardData" }) })
+        .then(res => res.json()).then(res => {
+            if (res.success) {
+                localDB.quotations = res.data.quotations || []; localDB.invoices = res.data.invoices || [];
+                localDB.expenses = res.data.expenses || []; localDB.payments = res.data.payments || [];
+                localDB.customers = res.data.customers || []; localDB.stats = res.data.stats || {};
+                
+                const cList = document.getElementById('customer_list'); cList.innerHTML = '';
+                localDB.customers.forEach(c => { const opt = document.createElement('option'); opt.value = c.Nama_Klien; cList.appendChild(opt); });
+
+                renderDashboardStats(); renderQuotationList(); renderInvoiceList(); renderExpenseList();
+            }
+        }).finally(() => document.getElementById('dash-loading').style.display = 'none');
+
+        fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getSettings" }) })
+        .then(res => res.json()).then(res => {
+            if (res.success && res.data) {
+                localDB.settings = res.data;
+                document.getElementById('global-company-title').innerText = localDB.settings.Company_Name || 'MRD CRM';
+                document.getElementById('set_company_name').value = localDB.settings.Company_Name || '';
+                document.getElementById('set_address').value = localDB.settings.Address || '';
+                document.getElementById('set_company_wa').value = localDB.settings.Company_WA || '';
+                document.getElementById('set_company_email').value = localDB.settings.Company_Email || '';
+                document.getElementById('set_company_website').value = localDB.settings.Company_Website || '';
+                document.getElementById('set_bank_name').value = localDB.settings.Bank_Name || '';
+                document.getElementById('set_bank_account').value = localDB.settings.Bank_Account || '';
+                document.getElementById('set_account_holder').value = localDB.settings.Account_Holder || '';
+                document.getElementById('set_wa_api').value = localDB.settings.WA_API || '';
+                document.getElementById('set_wa_session').value = localDB.settings.WA_Session || '';
+                document.getElementById('set_quotation_prologue').value = localDB.settings.Quotation_Prologue || '';
+                document.getElementById('set_invoice_terms').value = localDB.settings.Invoice_Terms || '';
+                document.getElementById('set_os_appid').value = localDB.settings.OneSignal_App_ID || '';
+                document.getElementById('set_os_key').value = localDB.settings.OneSignal_REST_Key || '';
+            }
+        });
+    }
+
+    function renderDashboardStats() {
+        document.getElementById('stat-total-qto').innerText = localDB.stats.totalQuotation || 0;
+        document.getElementById('stat-approved-qto').innerText = localDB.quotations.filter(r => r.status === 'APPROVED').length;
+        document.getElementById('stat-total-rev').innerText = "Rp " + safeFormatRupiah(localDB.stats.totalRevenue);
+        document.getElementById('stat-total-exp').innerText = "Rp " + safeFormatRupiah(localDB.stats.totalExpense);
+        const netProfit = (Number(localDB.stats.totalRevenue) || 0) - (Number(localDB.stats.totalExpense) || 0);
+        document.getElementById('stat-net-profit').innerText = "Rp " + safeFormatRupiah(netProfit);
+    }
+
+    function renderQuotationList(filterText = "") {
+        const container = document.getElementById('qto-list-container'); container.innerHTML = '';
+        let filtered = [...localDB.quotations].reverse();
+        if(filterText.trim()) filtered = filtered.filter(row => String(row.quote_id).toLowerCase().includes(filterText.toLowerCase()) || String(row.client_name).toLowerCase().includes(filterText.toLowerCase()));
+        if (filtered.length === 0) return container.innerHTML = '<div style="text-align:center;padding:20px;">Data tidak ditemukan.</div>';
+        
+        filtered.forEach(row => {
+            const card = document.createElement('div'); card.className = 'card list-item';
+            let actionButtons = row.status === 'PENDING' ? `<div class="row" style="margin-top:12px;"><button class="btn btn-accent btn-sm" onclick="adminModifyStatus('${row.quote_id}', 'approveQuotation')">🟢 Approve</button><button class="btn btn-danger btn-sm" onclick="adminModifyStatus('${row.quote_id}', 'rejectQuotation')">🔴 Reject</button></div>` : '';
+            card.innerHTML = `<div class="flex-meta"><div><span class="id-badge">${row.quote_id}</span></div><span class="status-badge status-${row.status}">${row.status}</span></div><div style="font-weight:bold; font-size:15px; margin-bottom:4px; white-space: pre-wrap;">${row.client_name}</div><div style="color:var(--text-muted); font-size:12px; margin-bottom:8px;">Skema: ${row.payment_term} | Rp ${safeFormatRupiah(row.total_amount)}</div><div class="row" style="gap:6px; margin-bottom:0;"><button class="btn btn-secondary btn-sm" onclick="window.open('${row.pdf_url}', '_blank')">📄 Berkas PDF</button></div>${actionButtons}`;
+            container.appendChild(card);
+        });
+    }
+    function filterQuotations() { renderQuotationList(document.getElementById('search-qto').value); }
+
+    function renderInvoiceList(filterText = "") {
+        const container = document.getElementById('inv-list-container'); container.innerHTML = '';
+        let filtered = [...localDB.invoices].reverse();
+        if(filterText.trim()) filtered = filtered.filter(row => String(row.invoice_id).toLowerCase().includes(filterText.toLowerCase()) || String(row.client_name).toLowerCase().includes(filterText.toLowerCase()));
+        
+        filtered.forEach(row => {
+            const card = document.createElement('div'); card.className = 'card list-item';
+            const paymentsForInv = localDB.payments.filter(p => p.Invoice_ID === row.invoice_id);
+            let totalTerbayar = 0; paymentsForInv.forEach(p => totalTerbayar += Number(p.Nominal));
+            let sisa = Number(row.total_amount) - totalTerbayar;
+
+            let manualAction = (row.status !== 'PAID') ? `<button class="btn btn-accent btn-sm" style="margin-top:10px; width: 100%;" onclick="confirmPartialPayment('${row.invoice_id}', ${sisa})">💸 Catat Pembayaran Masuk (Rp ${safeFormatRupiah(sisa)})</button>` : '';
+            let receiptLinks = '';
+            paymentsForInv.forEach((p, idx) => { if(p.PDF_Url && p.PDF_Url !== 'FAILED') receiptLinks += `<button class="btn btn-secondary btn-sm" style="font-size: 10px; margin-top:5px;" onclick="window.open('${p.PDF_Url}', '_blank')">📄 Kuitansi ${idx+1}: Rp ${safeFormatRupiah(p.Nominal)}</button>`; });
+
+            card.innerHTML = `<div class="flex-meta"><span class="id-badge">${row.invoice_id}</span><span class="status-badge status-${row.status}">${row.status}</span></div><div style="font-weight:bold; font-size:15px; margin-bottom:4px; white-space: pre-wrap;">${row.client_name}</div><div style="color:var(--text-muted); font-size:12px;">WA: ${row.client_whatsapp} | Ref QTO: ${row.quote_id}</div><div style="margin-top:6px; font-size:13px; color:var(--text-muted);">Total Tagihan: <strong style="color:var(--text);">Rp ${safeFormatRupiah(row.total_amount)}</strong><br>Total Terbayar: <strong style="color:var(--accent);">Rp ${safeFormatRupiah(totalTerbayar)}</strong></div>${receiptLinks}${manualAction}`;
+            container.appendChild(card);
+        });
+    }
+    function filterInvoices() { renderInvoiceList(document.getElementById('search-inv').value); }
+
+    function confirmPartialPayment(invId, maxBayar) {
+        let nominal = prompt(`Masukkan Nominal Uang Masuk (Sisa Tagihan: Rp ${safeFormatRupiah(maxBayar)}).\nKetikan angka tanpa titik/koma:`, maxBayar);
+        if (!nominal || isNaN(nominal)) return;
+        let keterangan = prompt("Keterangan Pembayaran (Contoh: DP 50%, Termin I, atau Pelunasan):", "Pembayaran Termin");
+        if (!keterangan) return;
+
+        if (!confirm(`Tindak lanjut catat Rp ${safeFormatRupiah(nominal)} untuk ${keterangan}?`)) return;
+        
+        fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "confirmPayment", data: { invoice_id: invId, nominal_bayar: nominal, keterangan: keterangan } }) })
+        .then(res => res.json()).then(res => { alert("Dana berhasil dicatat dan Kuitansi telah terkirim!"); fetchLiveDatabase(); });
+    }
+
+    function renderExpenseList(filterText = "") {
+        const container = document.getElementById('exp-list-container'); container.innerHTML = '';
+        let filtered = [...localDB.expenses].reverse();
+        if(filterText.trim()) filtered = filtered.filter(row => String(row.Deskripsi).toLowerCase().includes(filterText.toLowerCase()) || String(row.Kategori).toLowerCase().includes(filterText.toLowerCase()));
+        filtered.forEach(row => {
+            const card = document.createElement('div'); card.className = 'card list-item';
+            let linkButton = row.Bukti_File_Link ? `<button class="btn btn-secondary btn-sm" onclick="window.open('${row.Bukti_File_Link}', '_blank')">🔗 Buka Nota</button>` : '';
+            card.innerHTML = `<div class="flex-meta"><span class="id-badge">${row.ID_Pengeluaran}</span><span class="status-badge status-REJECTED">${row.Kategori}</span></div><div style="font-weight:bold;">${row.Deskripsi}</div><div style="color:var(--danger); font-weight:bold; margin:6px 0;">Rp ${safeFormatRupiah(row.Nominal)}</div>${linkButton}`;
+            container.appendChild(card);
+        });
+    }
+    function filterExpenses() { renderExpenseList(document.getElementById('search-exp').value); }
+
+    function adminModifyStatus(qId, targetAction) {
+        if (!confirm(`Proses tindakan persetujuan ini pada ${qId}?`)) return;
+        fetch(API_URL, { method: "POST", body: JSON.stringify({ action: targetAction, data: { quote_id: qId } }) })
+        .then(res => res.json()).then(res => { alert('Status tersimpan!'); fetchLiveDatabase(); });
+    }
+
+    function saveSettings() {
+        const btn = document.getElementById('btn-save-settings'); btn.disabled = true; btn.innerText = "Menyimpan...";
+        const payload = { action: "saveSettings", data: {
+            Company_Name: document.getElementById('set_company_name').value, Address: document.getElementById('set_address').value,
+            Company_WA: document.getElementById('set_company_wa').value, Company_Email: document.getElementById('set_company_email').value, Company_Website: document.getElementById('set_company_website').value,
+            Bank_Name: document.getElementById('set_bank_name').value, Bank_Account: document.getElementById('set_bank_account').value, Account_Holder: document.getElementById('set_account_holder').value, 
+            WA_API: document.getElementById('set_wa_api').value, WA_Session: document.getElementById('set_wa_session').value, 
+            Quotation_Prologue: document.getElementById('set_quotation_prologue').value, Invoice_Terms: document.getElementById('set_invoice_terms').value,
+            OneSignal_App_ID: document.getElementById('set_os_appid').value, OneSignal_REST_Key: document.getElementById('set_os_key').value
+        }};
+        fetch(API_URL, { method: "POST", body: JSON.stringify(payload) })
+        .then(res => res.json()).then(res => { alert("Pengaturan berhasil disimpan."); fetchLiveDatabase(); })
+        .finally(() => { btn.disabled = false; btn.innerText = "Simpan Profil Global"; });
+    }
+
+    function submitExpense() {
+        fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "createExpense", data: { Tanggal: new Date().toLocaleDateString('id-ID'), Kategori: document.getElementById('exp_kategori').value, Deskripsi: document.getElementById('exp_deskripsi').value, Nominal: parseFloat(document.getElementById('exp_nominal').value) || 0, Bukti_File_Link: document.getElementById('exp_bukti').value } }) })
+        .then(res => res.json()).then(res => { alert("Pengeluaran tercatat!"); fetchLiveDatabase(); switchView('view-dashboard'); });
+    }
+
+    function submitQuotation() {
+        const btn = document.getElementById('btn-submit'); btn.disabled = true; btn.innerText = "Membuat Berkas...";
+        const items = [];
+        const names = document.querySelectorAll('.item_name'), specs = document.querySelectorAll('.item_spec'), qtys = document.querySelectorAll('.item_qty'), prices = document.querySelectorAll('.item_price');
+        names.forEach((nameInput, idx) => {
+            const n = nameInput.value.trim();
+            if (n !== "") {
+                const s = specs[idx].value, p = parseFloat(prices[idx].value) || 0;
+                items.push({ nama_barang: n, spesifikasi: s, qty: parseFloat(qtys[idx].value) || 1, harga: p });
+                if (!localDB.referenceItems.find(r => r.Nama_Item.toLowerCase() === n.toLowerCase())) fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "createReferenceItem", data: { Nama_Item: n, Deskripsi_Lengkap: s, Harga_Satuan: p } }) });
+            }
+        });
+        
+        fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "createQuotation", data: { client_name: document.getElementById('client_name').value, client_address: document.getElementById('client_address').value, client_whatsapp: document.getElementById('client_whatsapp').value, payment_term: document.getElementById('payment_term').value || "Termin / Kesepakatan", total_amount: calculateTotal(), items: items } }) })
+        .then(res => res.json()).then(res => {
+            alert('Quotation berhasil di-commit! Klien Anda sudah menerima dokumennya via WA.');
+            document.getElementById('client_name').value = ''; document.getElementById('client_address').value = ''; document.getElementById('client_whatsapp').value = '';
+            document.getElementById('item-container').innerHTML = `<div class="card item-row-card"><div class="form-group" style="margin-bottom: 8px;"><label>Nama Produk / Jasa</label><input type="text" class="item_name" list="ref_items_list" oninput="handleItemSelect(this)"></div><div class="row" style="align-items: flex-start;"><div style="flex: 2;"><label>Spesifikasi</label><textarea class="item_spec" style="resize: vertical;" rows="2"></textarea></div><div style="flex: 0.6;"><label>Qty</label><input type="number" class="item_qty" value="1" oninput="calculateTotal()"></div><div style="flex: 1.4;"><label>Harga Satuan</label><input type="number" class="item_price" oninput="calculateTotal()"></div></div></div>`;
+            calculateTotal(); fetchLiveDatabase(); switchView('view-dashboard'); 
+        }).finally(() => { btn.disabled = false; btn.innerText = "Kirim Dokumen Digital PDF"; });
+    }
+</script>
+</body>
+</html>
