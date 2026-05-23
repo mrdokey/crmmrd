@@ -12,21 +12,17 @@
         * { box-sizing: border-box; margin: 0; padding: 0; transition: background-color 0.15s; }
         
         html, body {
-            overscroll-behavior-y: none; 
-            touch-action: manipulation;  
+            overscroll-behavior-y: none; touch-action: manipulation;  
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-            background-color: var(--bg-main); 
-            color: var(--text); 
-            font-size: 14px; 
-            -webkit-user-select: none; 
-            user-select: none;
+            background-color: var(--bg-main); color: var(--text); font-size: 14px; 
+            -webkit-user-select: none; user-select: none;
         }
         
         input, textarea, select { -webkit-user-select: auto; user-select: auto; }
 
         .app-container { display: none; padding-bottom: 120px; } 
         .login-container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; padding: 20px; }
-        .container { max-width: 600px; margin: 0 auto; padding: 15px; overflow-x: hidden; /* Mencegah layar goyang saat animasi slide */ }
+        .container { max-width: 600px; margin: 0 auto; padding: 15px; overflow-x: hidden; }
         
         .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
         .top-bar h1 { font-size: 1.3rem; color: var(--primary); font-weight: 800; }
@@ -53,8 +49,13 @@
         .btn-accent { background-color: var(--accent); color: #ffffff; }
         .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 6px; width: auto; margin-top: 4px; }
         .btn-danger { background-color: var(--danger); color: #ffffff; }
-        .list-item { border-bottom: 1px solid var(--border); padding: 14px 0; }
+        
+        .list-item { border-bottom: 1px solid var(--border); padding: 14px 0; transition: background-color 0.2s; }
         .list-item:last-child { border-bottom: none; }
+        .list-item-clickable { cursor: pointer; border-radius: 8px; padding: 8px; margin: -8px; margin-bottom: 8px; }
+        .list-item-clickable:active { background-color: rgba(0,0,0,0.05); }
+        .dark-theme .list-item-clickable:active { background-color: rgba(255,255,255,0.05); }
+        
         .flex-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
         .id-badge { background: var(--bg-main); padding: 3px 8px; border-radius: 6px; font-size: 11px; border: 1px solid var(--border); font-weight: bold; color: var(--primary); }
         .status-badge { font-size: 11px; font-weight: bold; padding: 2px 8px; border-radius: 6px; text-transform: uppercase; }
@@ -65,28 +66,42 @@
         .status-PARTIAL { background: rgba(251,191,36,0.15); color: var(--warning); }
         .status-PAID { background: rgba(52,211,153,0.15); color: var(--accent); }
         
-        /* 🚀 NAVIGASI BAWAH ANIMASI POP & GLOW */
         .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 65px; background-color: var(--bg-card); border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; z-index: 1000; box-shadow: 0 -10px 15px rgba(0,0,0,0.03); }
         .nav-item { display: flex; flex-direction: column; align-items: center; color: var(--text-muted); cursor: pointer; font-size: 10px; font-weight: 600; text-decoration: none; flex: 1; text-align: center; transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
         .nav-icon { font-size: 1.3rem; margin-bottom: 2px; transition: all 0.25s ease; }
         .nav-item.active { color: var(--primary); transform: translateY(-3px) scale(1.05); }
         .nav-item.active .nav-icon { filter: drop-shadow(0px 3px 5px rgba(2, 132, 199, 0.5)); }
 
-        /* 🚀 ANIMASI TRANSISI HALAMAN SEPERTI APPSHEET / NATIVE iOS */
-        .spa-view { display: none; }
-        .spa-view.active { 
-            display: block; 
-            animation: slideInFade 0.35s cubic-bezier(0.1, 0.9, 0.2, 1) forwards; 
+        /* 🚀 FLOATING ACTION BUTTON (FAB) APPSHEET STYLE */
+        .fab-btn {
+            position: fixed;
+            bottom: 85px; 
+            right: 20px;
+            width: 58px;
+            height: 58px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            font-weight: 300;
+            line-height: 1;
+            box-shadow: 0 10px 20px -5px rgba(2, 132, 199, 0.5);
+            cursor: pointer;
+            z-index: 1001;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
         }
+        .fab-btn:active { transform: scale(0.9) rotate(45deg); box-shadow: 0 4px 10px -5px rgba(2, 132, 199, 0.5); }
+        @keyframes popIn { 0% { transform: scale(0) rotate(-45deg); opacity: 0; } 100% { transform: scale(1) rotate(0); opacity: 1; } }
 
-        @keyframes slideInFade {
-            0% { opacity: 0; transform: translateX(35px); }
-            100% { opacity: 1; transform: translateX(0); }
-        }
+        .spa-view { display: none; }
+        .spa-view.active { display: block; animation: slideInFade 0.35s cubic-bezier(0.1, 0.9, 0.2, 1) forwards; }
+        @keyframes slideInFade { 0% { opacity: 0; transform: translateX(35px); } 100% { opacity: 1; transform: translateX(0); } }
 
         .loading-overlay { text-align: center; padding: 20px; color: var(--primary); font-weight: bold; display: none; }
-        
-        /* INDIKATOR OFFLINE */
         .offline-badge { background: var(--danger); color: white; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; display: none; margin-left:10px; animation: blink 2s infinite; }
         @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
 
@@ -97,9 +112,27 @@
         #pwa-aggressive-modal { display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(15,23,42,0.9); z-index:99999; align-items:center; justify-content:center; backdrop-filter: blur(4px); }
         .pwa-card { background: white; padding: 30px 20px; border-radius: 20px; text-align: center; max-width: 320px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); }
         .manual-install-box { background: #f1f5f9; padding: 15px; border-radius: 12px; font-size: 13px; color: #334155; margin-bottom: 20px; text-align: left; line-height: 1.5; border: 1px solid #e2e8f0; }
+
+        #detail-modal { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg-main); z-index: 99999; transform: translateX(100%); transition: transform 0.35s cubic-bezier(0.1, 0.9, 0.2, 1); overflow-y: auto; padding-bottom: 80px; }
+        #detail-modal.open { transform: translateX(0); }
+        .detail-header { background: var(--bg-card); padding: 15px; display: flex; align-items: center; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 10; box-shadow: var(--shadow); }
+        .detail-header button { background: none; border: none; font-size: 1.8rem; color: var(--text); margin-right: 15px; cursor: pointer; padding: 0 10px; }
+        .item-detail-card { background: var(--bg-card); border-radius: 10px; padding: 15px; margin-bottom: 10px; border: 1px solid var(--border); box-shadow: var(--shadow); }
     </style>
 </head>
 <body class="light-theme">
+
+    <div id="fab-add" class="fab-btn" onclick="switchView('view-input-quotation', null)">
+        <span style="margin-top:-4px;">+</span>
+    </div>
+
+    <div id="detail-modal">
+        <div class="detail-header">
+            <button onclick="closePreview()">←</button>
+            <h2 style="margin:0; font-size:1.2rem;">Detail Penawaran</h2>
+        </div>
+        <div class="container" id="detail-content" style="padding-top: 20px;"></div>
+    </div>
 
     <div id="pwa-aggressive-modal">
        <div class="pwa-card">
@@ -206,11 +239,6 @@
                 <button class="btn btn-danger btn-sm" onclick="changePassword()">Ganti Password Akses</button>
             </div>
             <div class="card">
-                <h3>OneSignal Notification Config</h3>
-                <div class="form-group"><label>App ID</label><input type="text" id="set_os_appid"></div>
-                <div class="form-group"><label>REST API Key</label><input type="text" id="set_os_key"></div>
-            </div>
-            <div class="card">
                 <h3>Identitas Agensi</h3>
                 <div class="form-group"><label>Nama Perusahaan</label><input type="text" id="set_company_name"></div>
                 <div class="form-group"><label>Alamat Kantor</label><textarea id="set_address" rows="2"></textarea></div>
@@ -220,10 +248,6 @@
                 <div class="form-group"><label>Nama Bank</label><input type="text" id="set_bank_name"></div>
                 <div class="form-group"><label>Nomor Rekening</label><input type="text" id="set_bank_account"></div>
                 <div class="form-group"><label>Nama Pemilik Rekening</label><input type="text" id="set_account_holder"></div>
-                <div class="form-group"><label>Endpoint WhatsApp API</label><input type="text" id="set_wa_api"></div>
-                <div class="form-group"><label>Session WhatsApp Gateway</label><input type="text" id="set_wa_session"></div>
-                <div class="form-group"><label>Teks Prolog Penawaran</label><textarea id="set_quotation_prologue" rows="2"></textarea></div>
-                <div class="form-group"><label>Ketentuan Invoice</label><textarea id="set_invoice_terms" rows="2"></textarea></div>
                 <button class="btn btn-accent" id="btn-save-settings" style="margin-bottom:30px;" onclick="saveSettings()">Simpan Profil Global</button>
             </div>
         </div>
@@ -231,7 +255,6 @@
         <nav class="bottom-nav">
             <div class="nav-item active" onclick="switchView('view-dashboard', this)"><span class="nav-icon">📊</span>Home</div>
             <div class="nav-item" onclick="switchView('view-quotation-list', this)"><span class="nav-icon">📋</span>Qto</div>
-            <div class="nav-item" onclick="switchView('view-input-quotation', this)"><span class="nav-icon">➕</span>Buat</div>
             <div class="nav-item" onclick="switchView('view-invoice-list', this)"><span class="nav-icon">💳</span>Inv</div>
             <div class="nav-item" onclick="switchView('view-expense', this)"><span class="nav-icon">📉</span>Cost</div>
             <div class="nav-item" onclick="switchView('view-settings', this)"><span class="nav-icon">⚙️</span>Set</div>
@@ -245,18 +268,10 @@
     const API_URL = "https://script.google.com/macros/s/AKfycbyhoO7fOFvVCUHqtZpdu_kHAynlA5or6dkpHK0eGHtUiDOb4M3EbIllpr4vDapIXKCzWg/exec";
     const APP_LOGO_URL = "https://cdn-icons-png.flaticon.com/512/3003/3003261.png"; 
 
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-            navigator.serviceWorker.register('./sw.js').then(reg => {
-                console.log('Service Worker Aktif!', reg);
-            }).catch(err => console.log('SW Gagal:', err));
-        });
-    }
-
+    if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW Gagal:', err)); }); }
     document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
 
     let deferredPrompt;
-
     function setupPWA() {
         document.getElementById('dynamic-favicon').href = APP_LOGO_URL;
         if(document.getElementById('login-logo')) document.getElementById('login-logo').src = APP_LOGO_URL;
@@ -265,45 +280,22 @@
         document.getElementById('pwa-manifest').href = URL.createObjectURL(new Blob([JSON.stringify(manifest)], {type: 'application/json'}));
     }
 
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        document.getElementById('btn-auto-install').style.display = 'inline-block';
-        document.getElementById('manual-install-instruction').style.display = 'none';
-    });
-
+    window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; document.getElementById('btn-auto-install').style.display = 'inline-block'; document.getElementById('manual-install-instruction').style.display = 'none'; });
     window.addEventListener('DOMContentLoaded', () => { 
         setupPWA();
-        if (!window.matchMedia('(display-mode: standalone)').matches && !window.navigator.standalone) {
-            setTimeout(() => { document.getElementById('pwa-aggressive-modal').style.display = 'flex'; }, 1500);
-        }
+        if (!window.matchMedia('(display-mode: standalone)').matches && !window.navigator.standalone) { setTimeout(() => { document.getElementById('pwa-aggressive-modal').style.display = 'flex'; }, 1500); }
         if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark-theme');
         const token = localStorage.getItem('crm_token'); loggedUser = localStorage.getItem('crm_user');
-        if(token && loggedUser) {
-            document.getElementById('login-view').style.display = 'none'; document.getElementById('main-app').style.display = 'block';
-            fetchLiveDatabase(); fetchReferenceItems();
-        } else { generateCaptcha(); }
+        if(token && loggedUser) { document.getElementById('login-view').style.display = 'none'; document.getElementById('main-app').style.display = 'block'; fetchLiveDatabase(); fetchReferenceItems(); } else { generateCaptcha(); }
     });
 
-    function triggerPWAInstall() {
-        if(deferredPrompt) {
-            deferredPrompt.prompt();
-            deferredPrompt.userChoice.then((choice) => {
-                if(choice.outcome === 'accepted') closePWAModal();
-                deferredPrompt = null;
-            });
-        }
-    }
-
+    function triggerPWAInstall() { if(deferredPrompt) { deferredPrompt.prompt(); deferredPrompt.userChoice.then((choice) => { if(choice.outcome === 'accepted') closePWAModal(); deferredPrompt = null; }); } }
     function closePWAModal() { document.getElementById('pwa-aggressive-modal').style.display = 'none'; }
 
     let localDB = { quotations: [], invoices: [], expenses: [], payments: [], customers: [], referenceItems: [], settings: {}, stats: {} };
     let captchaAns = 0, loggedUser = "";
 
-    function generateCaptcha() {
-        const a = Math.floor(Math.random() * 10) + 1, b = Math.floor(Math.random() * 10) + 1;
-        captchaAns = a + b; document.getElementById('captcha-display').innerText = `${a} + ${b} =`;
-    }
+    function generateCaptcha() { const a = Math.floor(Math.random() * 10) + 1, b = Math.floor(Math.random() * 10) + 1; captchaAns = a + b; document.getElementById('captcha-display').innerText = `${a} + ${b} =`; }
 
     function doLogin() {
         if(!navigator.onLine) return alert("❌ Anda sedang Offline. Harap aktifkan internet untuk Login awal.");
@@ -322,36 +314,29 @@
 
     function doLogout() { localStorage.removeItem('crm_token'); localStorage.removeItem('crm_user'); location.reload(); }
 
-    function changePassword() {
-        const oldP = document.getElementById('sec_old').value, newP = document.getElementById('sec_new').value;
-        if(!oldP || !newP) return alert("Isi password lengkap!");
-        fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "changePassword", data: { username: loggedUser, old_password: oldP, new_password: newP } }) })
-        .then(res => res.json()).then(res => { if(res.success) { alert("Password Diganti! Login ulang."); doLogout(); } else { alert(res.message); } })
-        .catch(() => alert("Tidak bisa mengganti password saat Offline!"));
-    }
-
     function toggleTheme() { document.body.classList.toggle('dark-theme'); localStorage.setItem('theme', document.body.classList.contains('dark-theme') ? 'dark' : 'light');}
 
-    // 🚀 LOGIKA TRANSTION TAB: Aktifkan Class Baru agar Animasi CSS Berjalan
     function switchView(viewId, navElement) {
-        // Hapus active dari semua view agar animasinya me-reset
-        document.querySelectorAll('.spa-view').forEach(view => {
-            view.classList.remove('active');
-        });
-        document.querySelectorAll('.nav-item').forEach(item => {
-            item.classList.remove('active');
-        });
+        document.querySelectorAll('.spa-view').forEach(view => { view.classList.remove('active'); });
+        if(navElement) {
+            document.querySelectorAll('.nav-item').forEach(item => { item.classList.remove('active'); });
+        }
         
-        // Sedikit jeda (10 milidetik) agar browser 'sadar' classnya dicabut, lalu dipasang lagi untuk mentrigger animasi
+        // Sembunyikan tombol FAB melayang jika masuk form atau setting agar tidak menghalangi UI
+        const fab = document.getElementById('fab-add');
+        if(viewId === 'view-input-quotation' || viewId === 'view-expense' || viewId === 'view-settings') {
+            fab.style.display = 'none';
+        } else {
+            fab.style.display = 'flex';
+        }
+
         setTimeout(() => {
             document.getElementById(viewId).classList.add('active');
             if(navElement) navElement.classList.add('active');
-            
             if (viewId === 'view-dashboard') renderDashboardStats();
             if (viewId === 'view-quotation-list') renderQuotationList();
             if (viewId === 'view-invoice-list') renderInvoiceList();
             if (viewId === 'view-expense') renderExpenseList();
-            
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }, 10);
     }
@@ -364,40 +349,26 @@
     }
 
     function fetchReferenceItems() {
-        fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getReferenceItems" }) })
-        .then(res => res.json()).then(res => {
+        fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getReferenceItems" }) }).then(res => res.json()).then(res => {
             if (res.success) {
-                localDB.referenceItems = res.data || [];
-                localStorage.setItem('crm_offline_ref_items', JSON.stringify(localDB.referenceItems));
+                localDB.referenceItems = res.data || []; localStorage.setItem('crm_offline_ref_items', JSON.stringify(localDB.referenceItems));
                 const datalist = document.getElementById('ref_items_list'); datalist.innerHTML = '';
                 localDB.referenceItems.forEach(item => { const opt = document.createElement('option'); opt.value = item.Nama_Item; datalist.appendChild(opt); });
             }
         }).catch(() => {
             const backup = localStorage.getItem('crm_offline_ref_items');
-            if(backup) {
-                localDB.referenceItems = JSON.parse(backup);
-                const datalist = document.getElementById('ref_items_list'); datalist.innerHTML = '';
-                localDB.referenceItems.forEach(item => { const opt = document.createElement('option'); opt.value = item.Nama_Item; datalist.appendChild(opt); });
-            }
+            if(backup) { localDB.referenceItems = JSON.parse(backup); const datalist = document.getElementById('ref_items_list'); datalist.innerHTML = ''; localDB.referenceItems.forEach(item => { const opt = document.createElement('option'); opt.value = item.Nama_Item; datalist.appendChild(opt); }); }
         });
     }
 
     function handleItemSelect(el) {
         const matchedItem = localDB.referenceItems.find(i => i.Nama_Item === el.value);
-        if (matchedItem) {
-            const rowCard = el.closest('.item-row-card');
-            rowCard.querySelector('.item_spec').value = matchedItem.Deskripsi_Lengkap || '';
-            rowCard.querySelector('.item_price').value = matchedItem.Harga_Satuan || 0;
-            calculateTotal();
-        }
+        if (matchedItem) { const rowCard = el.closest('.item-row-card'); rowCard.querySelector('.item_spec').value = matchedItem.Deskripsi_Lengkap || ''; rowCard.querySelector('.item_price').value = matchedItem.Harga_Satuan || 0; calculateTotal(); }
     }
 
     function handleCustomerSelect(el) {
         const matched = localDB.customers.find(i => i.Nama_Klien === el.value);
-        if (matched) {
-            document.getElementById('client_address').value = matched.Alamat || '';
-            document.getElementById('client_whatsapp').value = matched.WhatsApp || '';
-        }
+        if (matched) { document.getElementById('client_address').value = matched.Alamat || ''; document.getElementById('client_whatsapp').value = matched.WhatsApp || ''; }
     }
 
     function addItemRow() {
@@ -408,28 +379,19 @@
     }
 
     function calculateTotal() {
-        let total = 0;
-        const qtys = document.querySelectorAll('.item_qty'), prices = document.querySelectorAll('.item_price');
+        let total = 0; const qtys = document.querySelectorAll('.item_qty'), prices = document.querySelectorAll('.item_price');
         document.querySelectorAll('.item_name').forEach((name, idx) => { total += (parseFloat(qtys[idx].value) || 0) * (parseFloat(prices[idx].value) || 0); });
         document.getElementById('grandTotal').innerText = "Rp " + total.toLocaleString('id-ID'); return total;
     }
 
     function fetchLiveDatabase() {
-        document.getElementById('dash-loading').style.display = 'block';
-        document.getElementById('offline-indicator').style.display = 'none';
-        
-        fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "fetchDashboardData" }) })
-        .then(res => res.json())
+        document.getElementById('dash-loading').style.display = 'block'; document.getElementById('offline-indicator').style.display = 'none';
+        fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "fetchDashboardData" }) }).then(res => res.json())
         .then(res => {
             if (res.success) {
-                localDB.quotations = res.data.quotations || []; localDB.invoices = res.data.invoices || [];
-                localDB.expenses = res.data.expenses || []; localDB.payments = res.data.payments || [];
-                localDB.customers = res.data.customers || []; localDB.stats = res.data.stats || {};
-                
+                localDB.quotations = res.data.quotations || []; localDB.invoices = res.data.invoices || []; localDB.expenses = res.data.expenses || []; localDB.payments = res.data.payments || []; localDB.customers = res.data.customers || []; localDB.stats = res.data.stats || {};
                 localStorage.setItem('crm_offline_db', JSON.stringify(localDB));
-                
-                const cList = document.getElementById('customer_list'); cList.innerHTML = '';
-                localDB.customers.forEach(c => { const opt = document.createElement('option'); opt.value = c.Nama_Klien; cList.appendChild(opt); });
+                const cList = document.getElementById('customer_list'); cList.innerHTML = ''; localDB.customers.forEach(c => { const opt = document.createElement('option'); opt.value = c.Nama_Klien; cList.appendChild(opt); });
                 renderDashboardStats(); renderQuotationList(); renderInvoiceList(); renderExpenseList();
             }
         })
@@ -438,54 +400,29 @@
             const backup = localStorage.getItem('crm_offline_db');
             if(backup) {
                 localDB = JSON.parse(backup);
-                alert("⚠️ KONEKSI TERPUTUS!\nSistem sedang menampilkan data simpanan (Read-Only) dari memori HP Anda.");
-                const cList = document.getElementById('customer_list'); cList.innerHTML = '';
-                localDB.customers.forEach(c => { const opt = document.createElement('option'); opt.value = c.Nama_Klien; cList.appendChild(opt); });
+                const cList = document.getElementById('customer_list'); cList.innerHTML = ''; localDB.customers.forEach(c => { const opt = document.createElement('option'); opt.value = c.Nama_Klien; cList.appendChild(opt); });
                 renderDashboardStats(); renderQuotationList(); renderInvoiceList(); renderExpenseList();
-            } else {
-                alert("⚠️ Anda Offline dan belum ada riwayat data yang tersimpan di HP ini.");
             }
         })
         .finally(() => document.getElementById('dash-loading').style.display = 'none');
 
-        fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getSettings" }) })
-        .then(res => res.json()).then(res => {
-            if (res.success && res.data) {
-                localDB.settings = res.data;
-                localStorage.setItem('crm_offline_settings', JSON.stringify(localDB.settings));
-                populateSettingsForm();
-            }
-        }).catch(() => {
-            const backupSet = localStorage.getItem('crm_offline_settings');
-            if(backupSet) { localDB.settings = JSON.parse(backupSet); populateSettingsForm(); }
-        });
+        fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getSettings" }) }).then(res => res.json()).then(res => {
+            if (res.success && res.data) { localDB.settings = res.data; localStorage.setItem('crm_offline_settings', JSON.stringify(localDB.settings)); populateSettingsForm(); }
+        }).catch(() => { const backupSet = localStorage.getItem('crm_offline_settings'); if(backupSet) { localDB.settings = JSON.parse(backupSet); populateSettingsForm(); } });
     }
 
     function populateSettingsForm() {
         document.getElementById('global-company-title').innerText = localDB.settings.Company_Name || 'MRD CRM';
-        document.getElementById('set_company_name').value = localDB.settings.Company_Name || '';
-        document.getElementById('set_address').value = localDB.settings.Address || '';
-        document.getElementById('set_company_wa').value = localDB.settings.Company_WA || '';
-        document.getElementById('set_company_email').value = localDB.settings.Company_Email || '';
-        document.getElementById('set_company_website').value = localDB.settings.Company_Website || '';
-        document.getElementById('set_bank_name').value = localDB.settings.Bank_Name || '';
-        document.getElementById('set_bank_account').value = localDB.settings.Bank_Account || '';
-        document.getElementById('set_account_holder').value = localDB.settings.Account_Holder || '';
-        document.getElementById('set_wa_api').value = localDB.settings.WA_API || '';
-        document.getElementById('set_wa_session').value = localDB.settings.WA_Session || '';
-        document.getElementById('set_quotation_prologue').value = localDB.settings.Quotation_Prologue || '';
-        document.getElementById('set_invoice_terms').value = localDB.settings.Invoice_Terms || '';
-        document.getElementById('set_os_appid').value = localDB.settings.OneSignal_App_ID || '';
-        document.getElementById('set_os_key').value = localDB.settings.OneSignal_REST_Key || '';
+        document.getElementById('set_company_name').value = localDB.settings.Company_Name || ''; document.getElementById('set_address').value = localDB.settings.Address || '';
+        document.getElementById('set_company_wa').value = localDB.settings.Company_WA || ''; document.getElementById('set_company_email').value = localDB.settings.Company_Email || '';
+        document.getElementById('set_company_website').value = localDB.settings.Company_Website || ''; document.getElementById('set_bank_name').value = localDB.settings.Bank_Name || '';
+        document.getElementById('set_bank_account').value = localDB.settings.Bank_Account || ''; document.getElementById('set_account_holder').value = localDB.settings.Account_Holder || '';
     }
 
     function renderDashboardStats() {
-        document.getElementById('stat-total-qto').innerText = localDB.stats.totalQuotation || 0;
-        document.getElementById('stat-approved-qto').innerText = localDB.quotations.filter(r => r.status === 'APPROVED').length;
-        document.getElementById('stat-total-rev').innerText = "Rp " + safeFormatRupiah(localDB.stats.totalRevenue);
-        document.getElementById('stat-total-exp').innerText = "Rp " + safeFormatRupiah(localDB.stats.totalExpense);
-        const netProfit = (Number(localDB.stats.totalRevenue) || 0) - (Number(localDB.stats.totalExpense) || 0);
-        document.getElementById('stat-net-profit').innerText = "Rp " + safeFormatRupiah(netProfit);
+        document.getElementById('stat-total-qto').innerText = localDB.stats.totalQuotation || 0; document.getElementById('stat-approved-qto').innerText = localDB.quotations.filter(r => r.status === 'APPROVED').length;
+        document.getElementById('stat-total-rev').innerText = "Rp " + safeFormatRupiah(localDB.stats.totalRevenue); document.getElementById('stat-total-exp').innerText = "Rp " + safeFormatRupiah(localDB.stats.totalExpense);
+        const netProfit = (Number(localDB.stats.totalRevenue) || 0) - (Number(localDB.stats.totalExpense) || 0); document.getElementById('stat-net-profit').innerText = "Rp " + safeFormatRupiah(netProfit);
     }
 
     function renderQuotationList(filterText = "") {
@@ -497,49 +434,49 @@
         filtered.forEach(row => {
             const card = document.createElement('div'); card.className = 'card list-item';
             let actionButtons = '';
-            
-            if (row.status === 'PENDING') {
-                actionButtons = `<div class="row" style="margin-top:12px;"><button class="btn btn-accent btn-sm" onclick="adminModifyStatus('${row.quote_id}', 'approveQuotation')">🟢 Approve</button><button class="btn btn-danger btn-sm" onclick="adminModifyStatus('${row.quote_id}', 'rejectQuotation')">🔴 Reject</button></div>`;
-            } else if (row.status === 'REJECTED') {
-                actionButtons = `<div class="row" style="margin-top:12px;"><button class="btn btn-accent btn-sm" onclick="reviseQuotation('${row.quote_id}')">✏️ Revisi Data</button><button class="btn btn-secondary btn-sm" style="color:var(--danger); border-color:var(--danger);" onclick="deleteQuotation('${row.quote_id}')">🗑️ Hapus</button></div>`;
-            }
+            if (row.status === 'PENDING') { actionButtons = `<div class="row" style="margin-top:12px;"><button class="btn btn-accent btn-sm" onclick="event.stopPropagation(); adminModifyStatus('${row.quote_id}', 'approveQuotation')">🟢 Approve</button><button class="btn btn-danger btn-sm" onclick="event.stopPropagation(); adminModifyStatus('${row.quote_id}', 'rejectQuotation')">🔴 Reject</button></div>`; } 
+            else if (row.status === 'REJECTED') { actionButtons = `<div class="row" style="margin-top:12px;"><button class="btn btn-accent btn-sm" onclick="event.stopPropagation(); reviseQuotation('${row.quote_id}')">✏️ Revisi Data</button><button class="btn btn-secondary btn-sm" style="color:var(--danger); border-color:var(--danger);" onclick="event.stopPropagation(); deleteQuotation('${row.quote_id}')">🗑️ Hapus</button></div>`; }
 
-            card.innerHTML = `<div class="flex-meta"><div><span class="id-badge">${row.quote_id}</span></div><span class="status-badge status-${row.status}">${row.status}</span></div><div style="font-weight:bold; font-size:15px; margin-bottom:4px; white-space: pre-wrap;">${row.client_name}</div><div style="color:var(--text-muted); font-size:12px; margin-bottom:8px;">Skema: ${row.payment_term} | Rp ${safeFormatRupiah(row.total_amount)}</div><div class="row" style="gap:6px; margin-bottom:0;"><button class="btn btn-secondary btn-sm" onclick="window.open('${row.pdf_url}', '_blank')">📄 Berkas PDF</button></div>${actionButtons}`;
+            card.innerHTML = `<div class="list-item-clickable" onclick="showPreview('${row.quote_id}')"><div class="flex-meta"><div><span class="id-badge">${row.quote_id}</span></div><span class="status-badge status-${row.status}">${row.status}</span></div><div style="font-weight:bold; font-size:15px; margin-bottom:4px; white-space: pre-wrap;">${row.client_name}</div><div style="color:var(--text-muted); font-size:12px; margin-bottom:4px;">Skema: ${row.payment_term} | Rp ${safeFormatRupiah(row.total_amount)}</div><div style="color:var(--primary); font-size:11px; font-weight:bold; text-align:right;">🔍 Ketuk untuk lihat rincian</div></div><div class="row" style="gap:6px; margin-bottom:0; margin-top:8px;"><button class="btn btn-secondary btn-sm" onclick="event.stopPropagation(); window.open('${row.pdf_url}', '_blank')">📄 Buka Quotation PDF</button></div>${actionButtons}`;
             container.appendChild(card);
         });
     }
     function filterQuotations() { renderQuotationList(document.getElementById('search-qto').value); }
 
-    function reviseQuotation(quoteId) {
-        if(!navigator.onLine) return alert("❌ Fitur Revisi membutuhkan koneksi internet (Tidak bisa mode Offline).");
-        const qto = localDB.quotations.find(q => q.quote_id == quoteId);
-        if(!qto) return alert("Gagal mendeteksi dokumen.");
-        const nameParts = qto.client_name.split('\n');
-        const cName = nameParts[0] || ""; const cAddr = nameParts.slice(1).join('\n') || "";
+    function showPreview(quoteId) {
+        const qto = localDB.quotations.find(q => q.quote_id == quoteId); if(!qto) return;
+        const modal = document.getElementById('detail-modal'); const content = document.getElementById('detail-content');
+        content.innerHTML = `<div class="card" style="border-top: 4px solid var(--primary);"><h3 style="margin-bottom: 5px;">${qto.client_name}</h3><p style="color:var(--text-muted); font-size:12px; margin-bottom:15px;">${quoteId} • WA: ${qto.client_whatsapp || '-'}</p><div style="background:var(--bg-main); padding:10px; border-radius:8px;"><div style="font-size:11px; color:var(--text-muted); margin-bottom:2px;">TOTAL KONTRAK</div><h2 style="color:var(--accent); margin-bottom:0;">Rp ${safeFormatRupiah(qto.total_amount)}</h2></div></div><h3 style="margin-top:20px; margin-bottom:10px;">Daftar Item / Jasa</h3><div id="preview-items-container" style="text-align:center; padding:30px;"><span style="font-size:2rem; animation: blink 1s infinite;">⏳</span><br><span style="font-size:12px; color:var(--text-muted);">Menarik data server...</span></div>`;
+        modal.classList.add('open');
+        if(navigator.onLine) {
+            fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getQuotationItems", data: { quote_id: quoteId } }) }).then(r => r.json()).then(res => {
+                if(res.success && res.data.length > 0) {
+                    let html = ''; res.data.forEach((it, index) => { html += `<div class="item-detail-card"><div style="display:flex; justify-content:space-between; margin-bottom:6px;"><div style="font-weight:bold; color:var(--primary); font-size:13px;">${index + 1}. ${it.Nama_Barang}</div><div style="font-weight:bold; font-size:13px;">Qty: ${it.Qty}</div></div><div style="font-size:12px; color:var(--text-muted); margin-bottom:10px; white-space: pre-wrap;">${it.Spesifikasi}</div><div style="border-top: 1px dashed var(--border); padding-top: 8px; display:flex; justify-content:space-between; font-size:12px;"><span>@ Rp ${safeFormatRupiah(it.Harga_Satuan)}</span><span style="font-weight:bold; color:var(--text);">Rp ${safeFormatRupiah(it.Subtotal)}</span></div></div>`; });
+                    document.getElementById('preview-items-container').innerHTML = html;
+                } else { document.getElementById('preview-items-container').innerHTML = '<div style="color:var(--text-muted);">Data kosong.</div>'; }
+            }).catch(() => { document.getElementById('preview-items-container').innerHTML = '<div style="color:var(--danger);">Gagal memuat rincian item.</div>'; });
+        } else { document.getElementById('preview-items-container').innerHTML = '<div style="color:var(--danger); background:rgba(220,38,38,0.1); padding:15px; border-radius:8px;">⚠️ Rincian item tidak dimuat saat Offline.</div>'; }
+    }
+    function closePreview() { document.getElementById('detail-modal').classList.remove('open'); }
 
+    function reviseQuotation(quoteId) {
+        if(!navigator.onLine) return alert("❌ Revisi butuh internet.");
+        const qto = localDB.quotations.find(q => q.quote_id == quoteId); if(!qto) return;
+        const nameParts = qto.client_name.split('\n'); const cName = nameParts[0] || ""; const cAddr = nameParts.slice(1).join('\n') || "";
         document.getElementById('dash-loading').style.display = 'block';
-        fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getQuotationItems", data: { quote_id: quoteId } }) })
-        .then(res => res.json()).then(res => {
+        fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getQuotationItems", data: { quote_id: quoteId } }) }).then(res => res.json()).then(res => {
             if(res.success) {
                 document.getElementById('client_name').value = cName; document.getElementById('client_address').value = cAddr; document.getElementById('client_whatsapp').value = qto.client_whatsapp || ''; document.getElementById('payment_term').value = qto.payment_term || '';
                 const container = document.getElementById('item-container'); container.innerHTML = '';
-                res.data.forEach(item => {
-                    const newRow = document.createElement('div'); newRow.className = 'card item-row-card'; newRow.style.marginTop = '10px';
-                    newRow.innerHTML = `<div class="form-group" style="margin-bottom: 8px;"><label>Nama Produk / Jasa</label><input type="text" class="item_name" list="ref_items_list" value="${item.Nama_Barang}" oninput="handleItemSelect(this)"></div><div class="row" style="align-items: flex-start;"><div style="flex: 2;"><label>Spesifikasi</label><textarea class="item_spec" style="resize: vertical;" rows="2">${item.Spesifikasi}</textarea></div><div style="flex: 0.6;"><label>Qty</label><input type="number" class="item_qty" value="${item.Qty}" oninput="calculateTotal()"></div><div style="flex: 1.4;"><label>Harga Satuan</label><input type="number" class="item_price" value="${item.Harga_Satuan}" oninput="calculateTotal()"></div></div>`;
-                    container.appendChild(newRow);
-                });
+                res.data.forEach(item => { const newRow = document.createElement('div'); newRow.className = 'card item-row-card'; newRow.style.marginTop = '10px'; newRow.innerHTML = `<div class="form-group" style="margin-bottom: 8px;"><label>Nama Produk / Jasa</label><input type="text" class="item_name" list="ref_items_list" value="${item.Nama_Barang}" oninput="handleItemSelect(this)"></div><div class="row" style="align-items: flex-start;"><div style="flex: 2;"><label>Spesifikasi</label><textarea class="item_spec" style="resize: vertical;" rows="2">${item.Spesifikasi}</textarea></div><div style="flex: 0.6;"><label>Qty</label><input type="number" class="item_qty" value="${item.Qty}" oninput="calculateTotal()"></div><div style="flex: 1.4;"><label>Harga Satuan</label><input type="number" class="item_price" value="${item.Harga_Satuan}" oninput="calculateTotal()"></div></div>`; container.appendChild(newRow); });
                 calculateTotal(); switchView('view-input-quotation');
-            } else { alert("Gagal memuat pecahan sub-item."); }
+            } else { alert("Gagal memuat item."); }
         }).finally(() => document.getElementById('dash-loading').style.display = 'none');
     }
 
-    function deleteQuotation(quoteId) {
-        if(!navigator.onLine) return alert("❌ Menghapus file membutuhkan koneksi internet.");
-        if(!confirm(`Apakah Anda yakin ingin MENGHAPUS PERMANEN penawaran ${quoteId}?`)) return;
-        fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "deleteQuotation", data: { quote_id: quoteId } }) })
-        .then(res => res.json()).then(res => { alert("Dokumen dihapus total!"); fetchLiveDatabase(); });
-    }
+    function deleteQuotation(quoteId) { if(!navigator.onLine) return alert("❌ Menghapus file butuh internet."); if(!confirm(`HAPUS PERMANEN penawaran ${quoteId}?`)) return; fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "deleteQuotation", data: { quote_id: quoteId } }) }).then(res => res.json()).then(res => { alert("Dihapus!"); fetchLiveDatabase(); }); }
 
+    // 🚀 UPDATE RENDER INVOICE: TAMBAH TOMBOL BUAT/BUKA PDF INVOICE
     function renderInvoiceList(filterText = "") {
         const container = document.getElementById('inv-list-container'); container.innerHTML = '';
         let filtered = [...localDB.invoices].reverse();
@@ -549,67 +486,58 @@
             const paymentsForInv = localDB.payments.filter(p => p.Invoice_ID === row.invoice_id);
             let totalTerbayar = 0; paymentsForInv.forEach(p => totalTerbayar += Number(p.Nominal));
             let sisa = Number(row.total_amount) - totalTerbayar;
-            let manualAction = (row.status !== 'PAID') ? `<button class="btn btn-accent btn-sm" style="margin-top:10px; width: 100%;" onclick="confirmPartialPayment('${row.invoice_id}', ${sisa})">💸 Catat Pembayaran Masuk (Rp ${safeFormatRupiah(sisa)})</button>` : '';
-            let receiptLinks = '';
-            paymentsForInv.forEach((p, idx) => { if(p.PDF_Url && p.PDF_Url !== 'FAILED') receiptLinks += `<button class="btn btn-secondary btn-sm" style="font-size: 10px; margin-top:5px;" onclick="window.open('${p.PDF_Url}', '_blank')">📄 Kuitansi ${idx+1}: Rp ${safeFormatRupiah(p.Nominal)}</button>`; });
-            card.innerHTML = `<div class="flex-meta"><span class="id-badge">${row.invoice_id}</span><span class="status-badge status-${row.status}">${row.status}</span></div><div style="font-weight:bold; font-size:15px; margin-bottom:4px; white-space: pre-wrap;">${row.client_name}</div><div style="color:var(--text-muted); font-size:12px;">WA: ${row.client_whatsapp} | Ref QTO: ${row.quote_id}</div><div style="margin-top:6px; font-size:13px; color:var(--text-muted);">Total Tagihan: <strong style="color:var(--text);">Rp ${safeFormatRupiah(row.total_amount)}</strong><br>Total Terbayar: <strong style="color:var(--accent);">Rp ${safeFormatRupiah(totalTerbayar)}</strong></div>${receiptLinks}${manualAction}`;
+            
+            // Logika Tombol Aksi Pembayaran
+            let manualAction = (row.status !== 'PAID') ? `<button class="btn btn-accent btn-sm" style="margin-top:10px; width: 100%;" onclick="confirmPartialPayment('${row.invoice_id}', ${sisa})">💸 Catat Pembayaran (Sisa Rp ${safeFormatRupiah(sisa)})</button>` : '';
+            
+            // Logika Tombol PDF INVOICE
+            let invoicePdfAction = '';
+            if (row.pdf_url && row.pdf_url.trim() !== '') {
+                invoicePdfAction = `<button class="btn btn-secondary btn-sm" style="width:100%; margin-top:8px; border-color:var(--primary); color:var(--primary);" onclick="window.open('${row.pdf_url}', '_blank')">📄 Buka & Unduh PDF Invoice</button>`;
+            } else {
+                invoicePdfAction = `<button class="btn btn-secondary btn-sm" style="width:100%; margin-top:8px; background:var(--primary-soft); color:var(--primary);" onclick="triggerInvoicePdf(event, '${row.invoice_id}')">⚙️ Buat PDF Invoice Resmi</button>`;
+            }
+
+            let receiptLinks = ''; paymentsForInv.forEach((p, idx) => { if(p.PDF_Url && p.PDF_Url !== 'FAILED') receiptLinks += `<button class="btn btn-secondary btn-sm" style="font-size: 10px; margin-top:5px;" onclick="window.open('${p.PDF_Url}', '_blank')">📄 Kuitansi ${idx+1}: Rp ${safeFormatRupiah(p.Nominal)}</button>`; });
+            
+            card.innerHTML = `<div class="flex-meta"><span class="id-badge">${row.invoice_id}</span><span class="status-badge status-${row.status}">${row.status}</span></div><div style="font-weight:bold; font-size:15px; margin-bottom:4px; white-space: pre-wrap;">${row.client_name}</div><div style="color:var(--text-muted); font-size:12px;">Ref QTO: ${row.quote_id}</div><div style="margin-top:6px; font-size:13px; color:var(--text-muted);">Total Tagihan: <strong style="color:var(--text);">Rp ${safeFormatRupiah(row.total_amount)}</strong><br>Total Terbayar: <strong style="color:var(--accent);">Rp ${safeFormatRupiah(totalTerbayar)}</strong></div>${invoicePdfAction}${receiptLinks}${manualAction}`;
             container.appendChild(card);
         });
     }
     function filterInvoices() { renderInvoiceList(document.getElementById('search-inv').value); }
 
-    function confirmPartialPayment(invId, maxBayar) {
-        if(!navigator.onLine) return alert("❌ Pencatatan uang masuk butuh koneksi internet (Mencetak PDF Kuitansi).");
-        let nominal = prompt(`Masukkan Nominal Uang Masuk (Sisa Tagihan: Rp ${safeFormatRupiah(maxBayar)}):\nKetikan angka tanpa titik/koma:`, maxBayar);
-        if (!nominal || isNaN(nominal)) return;
-        let keterangan = prompt("Keterangan Pembayaran (Contoh: DP, Cicilan 1, Pelunasan):", "Pembayaran Termin"); if (!keterangan) return;
-        fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "confirmPayment", data: { invoice_id: invId, nominal_bayar: nominal, keterangan: keterangan } }) })
-        .then(res => res.json()).then(res => { alert("Kuitansi terkirim!"); fetchLiveDatabase(); });
+    // 🚀 FUNGSI MENEMBAK API GOOGLE UNTUK CETAK INVOICE PDF
+    function triggerInvoicePdf(event, invId) {
+        if(!navigator.onLine) return alert("❌ Membuat PDF Invoice butuh koneksi internet karena harus mencetak di server Google.");
+        const btn = event.target;
+        btn.innerText = "⏳ Sedang mencetak PDF di Server...";
+        btn.disabled = true;
+
+        fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "generateInvoicePdf", data: { invoice_id: invId } }) })
+        .then(res => res.json()).then(res => {
+            if(res.success) {
+                alert("PDF Invoice berhasil dibuat!");
+                fetchLiveDatabase(); // Reload data untuk memunculkan tombol Buka PDF
+            } else { alert("Gagal: " + res.message); btn.innerText = "⚙️ Buat PDF Invoice Resmi"; btn.disabled = false; }
+        }).catch(err => { alert("Gagal menghubungi server."); btn.innerText = "⚙️ Buat PDF Invoice Resmi"; btn.disabled = false; });
     }
 
-    function renderExpenseList(filterText = "") {
-        const container = document.getElementById('exp-list-container'); container.innerHTML = '';
-        let filtered = [...localDB.expenses].reverse();
-        if(filterText.trim()) filtered = filtered.filter(row => String(row.Deskripsi).toLowerCase().includes(filterText.toLowerCase()) || String(row.Kategori).toLowerCase().includes(filterText.toLowerCase()));
-        filtered.forEach(row => {
-            const card = document.createElement('div'); card.className = 'card list-item';
-            let linkButton = row.Bukti_File_Link ? `<button class="btn btn-secondary btn-sm" onclick="window.open('${row.Bukti_File_Link}', '_blank')">🔗 Buka Nota</button>` : '';
-            card.innerHTML = `<div class="flex-meta"><span class="id-badge">${row.ID_Pengeluaran}</span><span class="status-badge status-REJECTED">${row.Kategori}</span></div><div style="font-weight:bold;">${row.Deskripsi}</div><div style="color:var(--danger); font-weight:bold; margin:6px 0;">Rp ${safeFormatRupiah(row.Nominal)}</div>${linkButton}`;
-            container.appendChild(card);
-        });
-    }
+    function confirmPartialPayment(invId, maxBayar) { if(!navigator.onLine) return alert("❌ Catat pembayaran butuh internet."); let nominal = prompt(`Nominal Masuk (Sisa: Rp ${safeFormatRupiah(maxBayar)}):\nKetikan angka tanpa titik:`, maxBayar); if (!nominal || isNaN(nominal)) return; let keterangan = prompt("Keterangan:", "Pembayaran Termin"); if (!keterangan) return; fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "confirmPayment", data: { invoice_id: invId, nominal_bayar: nominal, keterangan: keterangan } }) }).then(res => res.json()).then(res => { alert("Kuitansi terkirim!"); fetchLiveDatabase(); }); }
+
+    function renderExpenseList(filterText = "") { const container = document.getElementById('exp-list-container'); container.innerHTML = ''; let filtered = [...localDB.expenses].reverse(); if(filterText.trim()) filtered = filtered.filter(row => String(row.Deskripsi).toLowerCase().includes(filterText.toLowerCase()) || String(row.Kategori).toLowerCase().includes(filterText.toLowerCase())); filtered.forEach(row => { const card = document.createElement('div'); card.className = 'card list-item'; let linkButton = row.Bukti_File_Link ? `<button class="btn btn-secondary btn-sm" onclick="window.open('${row.Bukti_File_Link}', '_blank')">🔗 Buka Nota</button>` : ''; card.innerHTML = `<div class="flex-meta"><span class="id-badge">${row.ID_Pengeluaran}</span><span class="status-badge status-REJECTED">${row.Kategori}</span></div><div style="font-weight:bold;">${row.Deskripsi}</div><div style="color:var(--danger); font-weight:bold; margin:6px 0;">Rp ${safeFormatRupiah(row.Nominal)}</div>${linkButton}`; container.appendChild(card); }); }
     function filterExpenses() { renderExpenseList(document.getElementById('search-exp').value); }
 
-    function adminModifyStatus(qId, targetAction) {
-        if(!navigator.onLine) return alert("❌ Aksi ini membutuhkan internet.");
-        fetch(API_URL, { method: "POST", body: JSON.stringify({ action: targetAction, data: { quote_id: qId } }) }).then(res => res.json()).then(() => { alert('Status tersimpan!'); fetchLiveDatabase(); });
-    }
+    function adminModifyStatus(qId, targetAction) { if(!navigator.onLine) return alert("❌ Butuh internet."); fetch(API_URL, { method: "POST", body: JSON.stringify({ action: targetAction, data: { quote_id: qId } }) }).then(res => res.json()).then(() => { alert('Status tersimpan!'); fetchLiveDatabase(); }); }
 
-    function saveSettings() {
-        if(!navigator.onLine) return alert("❌ Menyimpan setting membutuhkan internet.");
-        const btn = document.getElementById('btn-save-settings'); btn.disabled = true; btn.innerText = "Menyimpan...";
-        const payload = { action: "saveSettings", data: { Company_Name: document.getElementById('set_company_name').value, Address: document.getElementById('set_address').value, Company_WA: document.getElementById('set_company_wa').value, Company_Email: document.getElementById('set_company_email').value, Company_Website: document.getElementById('set_company_website').value, Bank_Name: document.getElementById('set_bank_name').value, Bank_Account: document.getElementById('set_bank_account').value, Account_Holder: document.getElementById('set_account_holder').value, WA_API: document.getElementById('set_wa_api').value, WA_Session: document.getElementById('set_wa_session').value, Quotation_Prologue: document.getElementById('set_quotation_prologue').value, Invoice_Terms: document.getElementById('set_invoice_terms').value, OneSignal_App_ID: document.getElementById('set_os_appid').value, OneSignal_REST_Key: document.getElementById('set_os_key').value }};
-        fetch(API_URL, { method: "POST", body: JSON.stringify(payload) }).then(res => res.json()).then(() => { alert("Pengaturan disimpan."); fetchLiveDatabase(); }).finally(() => { btn.disabled = false; btn.innerText = "Simpan Profil Global"; });
-    }
+    function saveSettings() { if(!navigator.onLine) return alert("❌ Butuh internet."); const btn = document.getElementById('btn-save-settings'); btn.disabled = true; btn.innerText = "Menyimpan..."; const payload = { action: "saveSettings", data: { Company_Name: document.getElementById('set_company_name').value, Address: document.getElementById('set_address').value, Company_WA: document.getElementById('set_company_wa').value, Company_Email: document.getElementById('set_company_email').value, Company_Website: document.getElementById('set_company_website').value, Bank_Name: document.getElementById('set_bank_name').value, Bank_Account: document.getElementById('set_bank_account').value, Account_Holder: document.getElementById('set_account_holder').value, WA_API: document.getElementById('set_wa_api').value, WA_Session: document.getElementById('set_wa_session').value, Quotation_Prologue: document.getElementById('set_quotation_prologue').value, Invoice_Terms: document.getElementById('set_invoice_terms').value, OneSignal_App_ID: document.getElementById('set_os_appid').value, OneSignal_REST_Key: document.getElementById('set_os_key').value }}; fetch(API_URL, { method: "POST", body: JSON.stringify(payload) }).then(res => res.json()).then(() => { alert("Disimpan."); fetchLiveDatabase(); }).finally(() => { btn.disabled = false; btn.innerText = "Simpan Profil Global"; }); }
 
-    function submitExpense() {
-        if(!navigator.onLine) return alert("❌ Menyimpan pengeluaran membutuhkan internet.");
-        fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "createExpense", data: { Tanggal: new Date().toLocaleDateString('id-ID'), Kategori: document.getElementById('exp_kategori').value, Deskripsi: document.getElementById('exp_deskripsi').value, Nominal: parseFloat(document.getElementById('exp_nominal').value) || 0, Bukti_File_Link: document.getElementById('exp_bukti').value } }) }).then(res => res.json()).then(() => { alert("Tercatat!"); fetchLiveDatabase(); switchView('view-dashboard'); });
-    }
+    function submitExpense() { if(!navigator.onLine) return alert("❌ Butuh internet."); fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "createExpense", data: { Tanggal: new Date().toLocaleDateString('id-ID'), Kategori: document.getElementById('exp_kategori').value, Deskripsi: document.getElementById('exp_deskripsi').value, Nominal: parseFloat(document.getElementById('exp_nominal').value) || 0, Bukti_File_Link: document.getElementById('exp_bukti').value } }) }).then(res => res.json()).then(() => { alert("Tercatat!"); fetchLiveDatabase(); switchView('view-dashboard'); }); }
 
     function submitQuotation() {
-        if(!navigator.onLine) return alert("❌ Membuat Quotation baru wajib terhubung internet karena sistem harus mencetak PDF.");
+        if(!navigator.onLine) return alert("❌ Membuat Quotation butuh internet.");
         const btn = document.getElementById('btn-submit'); btn.disabled = true; btn.innerText = "Memproses Berkas...";
-        const items = [];
-        const names = document.querySelectorAll('.item_name'), specs = document.querySelectorAll('.item_spec'), qtys = document.querySelectorAll('.item_qty'), prices = document.querySelectorAll('.item_price');
-        names.forEach((nameInput, idx) => {
-            const n = nameInput.value.trim();
-            if (n !== "") {
-                const s = specs[idx].value, p = parseFloat(prices[idx].value) || 0;
-                items.push({ nama_barang: n, spesifikasi: s, qty: parseFloat(qtys[idx].value) || 1, harga: p });
-                if (!localDB.referenceItems.find(r => r.Nama_Item.toLowerCase() === n.toLowerCase())) fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "createReferenceItem", data: { Nama_Item: n, Deskripsi_Lengkap: s, Harga_Satuan: p } }) });
-            }
-        });
+        const items = []; const names = document.querySelectorAll('.item_name'), specs = document.querySelectorAll('.item_spec'), qtys = document.querySelectorAll('.item_qty'), prices = document.querySelectorAll('.item_price');
+        names.forEach((nameInput, idx) => { const n = nameInput.value.trim(); if (n !== "") { const s = specs[idx].value, p = parseFloat(prices[idx].value) || 0; items.push({ nama_barang: n, spesifikasi: s, qty: parseFloat(qtys[idx].value) || 1, harga: p }); if (!localDB.referenceItems.find(r => r.Nama_Item.toLowerCase() === n.toLowerCase())) fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "createReferenceItem", data: { Nama_Item: n, Deskripsi_Lengkap: s, Harga_Satuan: p } }) }); } });
         fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "createQuotation", data: { client_name: document.getElementById('client_name').value, client_address: document.getElementById('client_address').value, client_whatsapp: document.getElementById('client_whatsapp').value, payment_term: document.getElementById('payment_term').value || "Termin / Kesepakatan", total_amount: calculateTotal(), items: items } }) })
         .then(res => res.json()).then(() => { alert('Quotation meluncur!'); document.getElementById('client_name').value = ''; document.getElementById('client_address').value = ''; document.getElementById('client_whatsapp').value = ''; document.getElementById('item-container').innerHTML = `<div class="card item-row-card"><div class="form-group" style="margin-bottom: 8px;"><label>Nama Produk / Jasa</label><input type="text" class="item_name" list="ref_items_list" oninput="handleItemSelect(this)"></div><div class="row" style="align-items: flex-start;"><div style="flex: 2;"><label>Spesifikasi</label><textarea class="item_spec" style="resize: vertical;" rows="2"></textarea></div><div style="flex: 0.6;"><label>Qty</label><input type="number" class="item_qty" value="1" oninput="calculateTotal()"></div><div style="flex: 1.4;"><label>Harga Satuan</label><input type="number" class="item_price" oninput="calculateTotal()"></div></div></div>`; calculateTotal(); fetchLiveDatabase(); switchView('view-dashboard'); }).finally(() => { btn.disabled = false; btn.innerText = "Simpan & Kirim Penawaran"; });
     }
