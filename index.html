@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MRD CRM v7.0 Ultimate</title>
+    <title>MRD CRM Enterprise</title>
     <link rel="icon" id="dynamic-favicon" type="image/png" href="">
     <link rel="manifest" id="pwa-manifest">
     <style>
@@ -11,7 +11,10 @@
         body.dark-theme { --bg-main: #0f172a; --bg-card: #1e293b; --border: #334155; --text: #f8fafc; --text-muted: #94a3b8; --primary: #38bdf8; --primary-soft: rgba(56, 189, 248, 0.15); --accent: #34d399; --danger: #f87171; --shadow: 0 4px 6px -1px rgba(0,0,0,0.3); }
         * { box-sizing: border-box; margin: 0; padding: 0; transition: background-color 0.15s; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: var(--bg-main); color: var(--text); font-size: 14px; }
-        .app-container { display: none; padding-bottom: 85px; } 
+        
+        /* 🚀 FIX: Padding bawah dipertebal agar tidak dimakan Bottom Nav */
+        .app-container { display: none; padding-bottom: 120px; } 
+        
         .login-container { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; padding: 20px; }
         .container { max-width: 600px; margin: 0 auto; padding: 15px; }
         .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
@@ -33,11 +36,11 @@
         input, textarea, select { width: 100%; padding: 10px; background-color: var(--bg-main); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 14px; font-family: inherit; }
         input:focus, textarea:focus, select:focus { border-color: var(--primary); outline: none; box-shadow: 0 0 0 3px var(--primary-soft); }
         .row { display: flex; gap: 10px; margin-bottom: 10px; }
-        .btn { background-color: var(--primary); color: #ffffff; border: none; padding: 11px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .btn { background-color: var(--primary); color: #ffffff; border: none; padding: 11px 16px; border-radius: 8px; font-weight: bold; cursor: pointer; width: 100%; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
         .btn:disabled { opacity: 0.6; cursor: not-allowed; }
         .btn-secondary { background-color: transparent; border: 1px solid var(--border); color: var(--text); }
         .btn-accent { background-color: var(--accent); color: #ffffff; }
-        .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 6px; width: auto; }
+        .btn-sm { padding: 6px 12px; font-size: 12px; border-radius: 6px; width: auto; margin-top: 4px; }
         .btn-danger { background-color: var(--danger); color: #ffffff; }
         .list-item { border-bottom: 1px solid var(--border); padding: 14px 0; }
         .list-item:last-child { border-bottom: none; }
@@ -59,38 +62,48 @@
         .loading-overlay { text-align: center; padding: 20px; color: var(--primary); font-weight: bold; display: none; }
         .profit-text { font-size: 1.8rem; font-weight: 800; color: var(--accent); }
         .loss-text { color: var(--danger) !important; }
-        
         .captcha-box { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; background: var(--bg-main); padding: 10px; border-radius: 8px; border: 1px dashed var(--primary); }
         .captcha-math { font-size: 1.2rem; font-weight: bold; color: var(--primary); letter-spacing: 2px; }
+
+        #pwa-aggressive-modal { display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(15,23,42,0.9); z-index:99999; align-items:center; justify-content:center; backdrop-filter: blur(4px); }
+        .pwa-card { background: white; padding: 30px 20px; border-radius: 20px; text-align: center; max-width: 320px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.2); }
+        .manual-install-box { background: #f1f5f9; padding: 15px; border-radius: 12px; font-size: 13px; color: #334155; margin-bottom: 20px; text-align: left; line-height: 1.5; border: 1px solid #e2e8f0; }
     </style>
 </head>
 <body class="light-theme">
 
+    <div id="pwa-aggressive-modal">
+       <div class="pwa-card">
+           <img src="" id="pwa-modal-logo" width="75" style="border-radius:18px; margin-bottom:15px; box-shadow: var(--shadow);">
+           <h2 style="color:#0f172a; margin-bottom:8px; font-size: 1.4rem;">Instal Aplikasi</h2>
+           <p style="color:#64748b; font-size:14px; margin-bottom:20px;">Tambahkan MRD CRM ke layar utama HP Anda agar akses lebih instan.</p>
+           <button id="btn-auto-install" class="btn btn-accent" style="display:none; margin-bottom:15px;" onclick="triggerPWAInstall()">📥 Instal Otomatis</button>
+           <div id="manual-install-instruction" class="manual-install-box">
+               <strong style="color:#0f172a; display:block; margin-bottom:5px;">💡 Cara Instal Manual:</strong>
+               1. Ketuk ikon menu (<b>⋮</b>) atau Share di browser Anda.<br>2. Pilih <b>"Add to Home Screen"</b>.
+           </div>
+           <button class="btn btn-secondary" style="border:none; color:var(--text-muted); font-size:13px; padding:8px;" onclick="closePWAModal()">Lanjutkan ke Web ➔</button>
+       </div>
+    </div>
+
     <div id="login-view" class="login-container">
         <img id="login-logo" src="" alt="App Logo" width="80" style="margin-bottom: 15px; border-radius: 18px; box-shadow: var(--shadow);">
-        
         <h1 style="color: var(--primary); margin-bottom: 5px;">MRD SaaS</h1>
         <p style="color: var(--text-muted); margin-bottom: 20px;">Enterprise CRM Portal</p>
         <div class="card">
-            <div class="form-group"><label>Username</label><input type="text" id="log_user" placeholder="Masukkan username"></div>
+            <div class="form-group"><label>Username</label><input type="text" id="log_user" placeholder="Username"></div>
             <div class="form-group"><label>Password</label><input type="password" id="log_pass" placeholder="••••••••"></div>
-            
-            <div class="captcha-box">
-                <span class="captcha-math" id="captcha-display">5 + 3 =</span>
-                <input type="number" id="log_captcha" placeholder="Hasil?" style="width: 80px; text-align: center;">
-            </div>
-
+            <div class="captcha-box"><span class="captcha-math" id="captcha-display">0 + 0 =</span><input type="number" id="log_captcha" placeholder="?" style="width: 80px; text-align: center;"></div>
             <button class="btn btn-accent" id="btn-login" onclick="doLogin()">Autentikasi Aman</button>
         </div>
     </div>
 
     <div id="main-app" class="app-container container">
-        
         <div class="top-bar">
-            <h1 id="global-company-title">MRD CRM Suite</h1>
+            <h1 id="global-company-title">MRD CRM</h1>
             <div style="display:flex; gap: 10px;">
                 <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
-                <button class="theme-toggle" style="color: var(--danger);" onclick="doLogout()">🚪 Keluar</button>
+                <button class="theme-toggle" style="color: var(--danger);" onclick="doLogout()">🚪</button>
             </div>
         </div>
 
@@ -103,73 +116,39 @@
                 <div class="stat-box"><div class="stat-label">Omset Cair Masuk</div><div class="stat-val" id="stat-total-rev" style="color: var(--accent);">Rp 0</div></div>
                 <div class="stat-box"><div class="stat-label">Total Pengeluaran</div><div class="stat-val" id="stat-total-exp" style="color: var(--danger);">Rp 0</div></div>
             </div>
-            <div class="card" style="text-align: center; padding: 20px;">
-                <div style="color: var(--text-muted); margin-bottom: 6px; font-weight: 500;">Estimasi Laba Bersih (Net Profit)</div>
-                <div class="profit-text" id="stat-net-profit">Rp 0</div>
-            </div>
+            <div class="card" style="text-align: center; padding: 20px;"><div style="color: var(--text-muted); margin-bottom: 6px;">Net Profit</div><div class="profit-text" id="stat-net-profit">Rp 0</div></div>
             <button class="btn btn-secondary" onclick="fetchLiveDatabase()">🔄 Tarik Data Terbaru</button>
         </div>
 
         <div id="view-quotation-list" class="spa-view">
-            <h2>Database Penawaran</h2>
-            <div class="search-container"><span class="search-icon">🔍</span><input type="text" id="search-qto" class="search-input" placeholder="Cari klien atau ID..." oninput="filterQuotations()"></div>
+            <h2>Database Penawaran Harga</h2>
+            <div class="search-container"><span class="search-icon">🔍</span><input type="text" id="search-qto" class="search-input" placeholder="Cari klien..." oninput="filterQuotations()"></div>
             <div id="qto-list-container"></div>
         </div>
 
         <div id="view-input-quotation" class="spa-view">
-            <h2>Buat Penawaran Baru</h2>
+            <h2>Buat Penawaran Baru / Revisi</h2>
             <div class="card">
-                <div class="form-group">
-                    <label>Nama Klien / Instansi (Auto-fill tersedia)</label>
-                    <input type="text" id="client_name" list="customer_list" placeholder="Contoh: PT. Inovasi Bangsa Digital" oninput="handleCustomerSelect(this)">
-                </div>
-                <div class="form-group">
-                    <label>Alamat Klien Lengkap</label>
-                    <textarea id="client_address" placeholder="Gedung Cyber, Jl. Kuningan Barat Raya No.8, Jakarta" style="resize: vertical;" rows="2"></textarea>
-                </div>
-                <div class="form-group">
-                    <label>WhatsApp Klien (Format: 628...)</label>
-                    <input type="number" id="client_whatsapp" placeholder="628123456789">
-                </div>
-                <div class="form-group">
-                    <label>Skema Pembayaran (Custom Termin)</label>
-                    <input type="text" id="payment_term" list="term_list" placeholder="Contoh: DP 40%, Termin I 30%, Pelunasan 30%">
-                    <datalist id="term_list">
-                        <option value="Lunas 100% (Upfront) di Awal">
-                        <option value="DP 50%, Sisa Pelunasan setelah Serah Terima">
-                        <option value="DP 30%, Termin I 30%, Termin II 40%">
-                    </datalist>
-                </div>
+                <div class="form-group"><label>Nama Klien / Instansi</label><input type="text" id="client_name" list="customer_list" placeholder="Ketik nama klien..." oninput="handleCustomerSelect(this)"></div>
+                <div class="form-group"><label>Alamat Klien Lengkap</label><textarea id="client_address" placeholder="Alamat lengkap..." style="resize: vertical;" rows="2"></textarea></div>
+                <div class="form-group"><label>WhatsApp Klien (628...)</label><input type="number" id="client_whatsapp" placeholder="628xxx"></div>
+                <div class="form-group"><label>Skema Pembayaran (Custom Termin)</label><input type="text" id="payment_term" list="term_list" placeholder="Contoh: DP 50%, Pelunasan 50%"><datalist id="term_list"><option value="Lunas 100% Upfront"><option value="DP 50%, Pelunasan Selesai"><option value="DP 30%, Termin 1 40%, Pelunasan 30%"></datalist></div>
             </div>
-
-            <h3>Rincian Pengadaan & Jasa</h3>
+            <h3>Rincian Jasa & Pengadaan</h3>
             <div id="item-container">
                 <div class="card item-row-card">
-                    <div class="form-group" style="margin-bottom: 8px;">
-                        <label>Nama Produk / Jasa</label>
-                        <input type="text" class="item_name" list="ref_items_list" placeholder="Ketik nama produk atau pilih..." oninput="handleItemSelect(this)">
-                    </div>
-                    <div class="row" style="align-items: flex-start;">
-                        <div style="flex: 2;"><label>Spesifikasi</label><textarea class="item_spec" placeholder="Deskripsi kerja..." style="resize: vertical;" rows="2"></textarea></div>
-                        <div style="flex: 0.6;"><label>Qty</label><input type="number" class="item_qty" value="1" oninput="calculateTotal()"></div>
-                        <div style="flex: 1.4;"><label>Harga Satuan</label><input type="number" class="item_price" placeholder="Rp" oninput="calculateTotal()"></div>
-                    </div>
+                    <div class="form-group" style="margin-bottom: 8px;"><label>Nama Produk / Jasa</label><input type="text" class="item_name" list="ref_items_list" placeholder="Pilih atau ketik barang..." oninput="handleItemSelect(this)"></div>
+                    <div class="row" style="align-items: flex-start;"><div style="flex: 2;"><label>Spesifikasi</label><textarea class="item_spec" style="resize: vertical;" rows="2"></textarea></div><div style="flex: 0.6;"><label>Qty</label><input type="number" class="item_qty" value="1" oninput="calculateTotal()"></div><div style="flex: 1.4;"><label>Harga Satuan</label><input type="number" class="item_price" oninput="calculateTotal()"></div></div>
                 </div>
             </div>
-
-            <div class="row" style="margin-bottom: 15px;"><button class="btn btn-secondary btn-sm" onclick="addItemRow()">➕ Tambah Baris Pengadaan</button></div>
-
-            <div class="card">
-                <div class="row" style="align-items: center; margin-bottom: 0;">
-                    <span style="color: var(--text-muted); font-weight: 600;">Grand Total Penawaran:</span>
-                    <strong id="grandTotal" style="font-size: 1.2rem; color: var(--accent); margin-left: auto;">Rp 0</strong>
-                </div>
-            </div>
-            <button class="btn btn-accent" id="btn-submit" onclick="submitQuotation()">Kirim Dokumen Digital PDF</button>
+            <div class="row" style="margin-bottom: 15px;"><button class="btn btn-secondary btn-sm" onclick="addItemRow()">➕ Tambah Baris</button></div>
+            <div class="card"><div class="row" style="align-items: center; margin-bottom:0;"><span style="color: var(--text-muted); font-weight:600;">Grand Total:</span><strong id="grandTotal" style="font-size: 1.2rem; color: var(--accent); margin-left: auto;">Rp 0</strong></div></div>
+            
+            <button class="btn btn-accent" id="btn-submit" style="margin-top:10px; margin-bottom:50px;" onclick="submitQuotation()">Simpan & Kirim Penawaran</button>
         </div>
 
         <div id="view-invoice-list" class="spa-view">
-            <h2>Riwayat Tagihan Resmi</h2>
+            <h2>Riwayat Tagihan Resmi (Invoice)</h2>
             <div class="search-container"><span class="search-icon">🔍</span><input type="text" id="search-inv" class="search-input" placeholder="Cari tagihan..." oninput="filterInvoices()"></div>
             <div id="inv-list-container"></div>
         </div>
@@ -177,49 +156,44 @@
         <div id="view-expense" class="spa-view">
             <h2>Anggaran Operasional</h2>
             <div class="card">
-                <div class="form-group"><label>Kategori Pembelanjaan</label>
-                    <select id="exp_kategori"><option value="Hardware / Komputer">Hardware / Komputer</option><option value="Server / Hosting / Domain">Server / Hosting</option><option value="Gaji / Fee Developer">Gaji / Fee Developer</option><option value="Operasional / Kantor">Operasional / Kantor</option><option value="Lain-lain">Lain-lain</option></select>
-                </div>
-                <div class="form-group"><label>Deskripsi</label><textarea id="exp_deskripsi" placeholder="Misal: Perpanjangan server VPS..." rows="2"></textarea></div>
-                <div class="form-group"><label>Nominal</label><input type="number" id="exp_nominal" placeholder="12000000"></div>
-                <div class="form-group"><label>Link Bukti File</label><input type="text" id="exp_bukti" placeholder="https://drive.google.com/..."></div>
-                <button class="btn btn-danger" id="btn-submit-expense" onclick="submitExpense()">Commit Pengeluaran</button>
+                <div class="form-group"><label>Kategori</label><select id="exp_kategori"><option value="Hardware / Komputer">Hardware / Komputer</option><option value="Server / Hosting / Domain">Server / Hosting</option><option value="Gaji / Fee Developer">Gaji / Fee Developer</option><option value="Operasional / Kantor">Operasional / Kantor</option><option value="Lain-lain">Lain-lain</option></select></div>
+                <div class="form-group"><label>Deskripsi</label><textarea id="exp_deskripsi" placeholder="Keterangan pembelian..." rows="2"></textarea></div>
+                <div class="form-group"><label>Nominal</label><input type="number" id="exp_nominal" placeholder="Rp"></div>
+                <div class="form-group"><label>Link Nota</label><input type="text" id="exp_bukti" placeholder="https://..."></div>
+                <button class="btn btn-danger" id="btn-submit-expense" style="margin-bottom:30px;" onclick="submitExpense()">Commit Pengeluaran</button>
             </div>
-            <div class="search-container"><span class="search-icon">🔍</span><input type="text" id="search-exp" class="search-input" placeholder="Cari pengeluaran..." oninput="filterExpenses()"></div>
+            <div class="search-container"><span class="search-icon">🔍</span><input type="text" id="search-exp" class="search-input" placeholder="Cari..." oninput="filterExpenses()"></div>
             <div id="exp-list-container"></div>
         </div>
 
         <div id="view-settings" class="spa-view">
             <h2>Pengaturan Profil & Keamanan</h2>
-            
             <div class="card">
-                <h3>Kunci Keamanan Akses</h3>
+                <h3>Keamanan Kunci Akses</h3>
                 <div class="form-group"><label>Password Lama</label><input type="password" id="sec_old"></div>
                 <div class="form-group"><label>Password Baru</label><input type="password" id="sec_new"></div>
                 <button class="btn btn-danger btn-sm" onclick="changePassword()">Ganti Password Akses</button>
             </div>
-
             <div class="card">
-                <h3>OneSignal Push Notification Config</h3>
-                <div class="form-group"><label>App ID</label><input type="text" id="set_os_appid" placeholder="xxxx-xxxx-xxxx-xxxx"></div>
-                <div class="form-group"><label>REST API Key</label><input type="text" id="set_os_key" placeholder="NzkyXYZ..."></div>
+                <h3>OneSignal Notification Config</h3>
+                <div class="form-group"><label>App ID</label><input type="text" id="set_os_appid"></div>
+                <div class="form-group"><label>REST API Key</label><input type="text" id="set_os_key"></div>
             </div>
-
             <div class="card">
-                <h3>Data Identitas Perusahaan</h3>
-                <div class="form-group"><label>Nama Perusahaan / Agensi</label><input type="text" id="set_company_name"></div>
+                <h3>Identitas Agensi</h3>
+                <div class="form-group"><label>Nama Perusahaan</label><input type="text" id="set_company_name"></div>
                 <div class="form-group"><label>Alamat Kantor</label><textarea id="set_address" rows="2"></textarea></div>
-                <div class="form-group"><label>WhatsApp Perusahaan (Tanpa +)</label><input type="number" id="set_company_wa"></div>
-                <div class="form-group"><label>Email Resmi Perusahaan</label><input type="text" id="set_company_email"></div>
-                <div class="form-group"><label>Website Resmi</label><input type="text" id="set_company_website"></div>
+                <div class="form-group"><label>WhatsApp Perusahaan</label><input type="number" id="set_company_wa"></div>
+                <div class="form-group"><label>Email</label><input type="text" id="set_company_email"></div>
+                <div class="form-group"><label>Website</label><input type="text" id="set_company_website"></div>
                 <div class="form-group"><label>Nama Bank</label><input type="text" id="set_bank_name"></div>
                 <div class="form-group"><label>Nomor Rekening</label><input type="text" id="set_bank_account"></div>
                 <div class="form-group"><label>Nama Pemilik Rekening</label><input type="text" id="set_account_holder"></div>
                 <div class="form-group"><label>Endpoint WhatsApp API</label><input type="text" id="set_wa_api"></div>
                 <div class="form-group"><label>Session WhatsApp Gateway</label><input type="text" id="set_wa_session"></div>
                 <div class="form-group"><label>Teks Prolog Penawaran</label><textarea id="set_quotation_prologue" rows="2"></textarea></div>
-                <div class="form-group"><label>Ketentuan Hukum Invoice</label><textarea id="set_invoice_terms" rows="2"></textarea></div>
-                <button class="btn btn-accent" id="btn-save-settings" onclick="saveSettings()">Simpan Profil Global</button>
+                <div class="form-group"><label>Ketentuan Invoice</label><textarea id="set_invoice_terms" rows="2"></textarea></div>
+                <button class="btn btn-accent" id="btn-save-settings" style="margin-bottom:30px;" onclick="saveSettings()">Simpan Profil Global</button>
             </div>
         </div>
 
@@ -237,115 +211,80 @@
     <datalist id="customer_list"></datalist>
 
     <script>
-    // =======================================================
-    // KONFIGURASI UTAMA APLIKASI
-    // =======================================================
-    // URL API Backend Google Apps Script (Versi Terbaru)
     const API_URL = "https://script.google.com/macros/s/AKfycbyhoO7fOFvVCUHqtZpdu_kHAynlA5or6dkpHK0eGHtUiDOb4M3EbIllpr4vDapIXKCzWg/exec";
-    
-    // 🎨 GANTI LINK DI BAWAH INI DENGAN LINK LOGO DARI GITHUB/IMGBB ANDA
-    // Pastikan logonya berbentuk persegi, disarankan ukuran 512x512 pixels (PNG)
     const APP_LOGO_URL = "https://cdn-icons-png.flaticon.com/512/3003/3003261.png"; 
-    // =======================================================
 
-    let localDB = { quotations: [], invoices: [], expenses: [], payments: [], customers: [], referenceItems: [], settings: {}, stats: {} };
-    let captchaAns = 0;
-    let loggedUser = "";
+    let deferredPrompt;
 
-    // 🚀 PWA MANIFEST & LOGO INJECTOR
     function setupPWA() {
-        // Terapkan ke Favicon (Tab Browser)
         document.getElementById('dynamic-favicon').href = APP_LOGO_URL;
-        
-        // Terapkan ke Halaman Login
-        const loginLogo = document.getElementById('login-logo');
-        if(loginLogo) loginLogo.src = APP_LOGO_URL;
-
-        // Terapkan ke Manifest App (Bisa Install ke Home Screen)
-        const manifest = {
-            "name": "MRD CRM Enterprise",
-            "short_name": "MRD CRM",
-            "start_url": ".",
-            "display": "standalone",
-            "background_color": "#0f172a",
-            "theme_color": "#0284c7",
-            "icons": [{ "src": APP_LOGO_URL, "sizes": "512x512", "type": "image/png" }]
-        };
-        const blob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
-        document.getElementById('pwa-manifest').href = URL.createObjectURL(blob);
+        if(document.getElementById('login-logo')) document.getElementById('login-logo').src = APP_LOGO_URL;
+        if(document.getElementById('pwa-modal-logo')) document.getElementById('pwa-modal-logo').src = APP_LOGO_URL;
+        const manifest = { "name": "MRD CRM Enterprise", "short_name": "MRD CRM", "start_url": window.location.href, "display": "standalone", "background_color": "#0f172a", "theme_color": "#0284c7", "icons": [{ "src": APP_LOGO_URL, "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }] };
+        document.getElementById('pwa-manifest').href = URL.createObjectURL(new Blob([JSON.stringify(manifest)], {type: 'application/json'}));
     }
 
-    // MATH CAPTCHA ENGINE
-    function generateCaptcha() {
-        const a = Math.floor(Math.random() * 10) + 1;
-        const b = Math.floor(Math.random() * 10) + 1;
-        captchaAns = a + b;
-        document.getElementById('captcha-display').innerText = `${a} + ${b} =`;
-    }
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredPrompt = e;
+        document.getElementById('btn-auto-install').style.display = 'inline-block';
+        document.getElementById('manual-install-instruction').style.display = 'none';
+    });
 
     window.addEventListener('DOMContentLoaded', () => { 
         setupPWA();
-        if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark-theme');
-        
-        // Cek Session
-        const token = localStorage.getItem('crm_token');
-        loggedUser = localStorage.getItem('crm_user');
-        
-        if(token && loggedUser) {
-            document.getElementById('login-view').style.display = 'none';
-            document.getElementById('main-app').style.display = 'block';
-            fetchLiveDatabase(); 
-            fetchReferenceItems();
-        } else {
-            generateCaptcha();
+        if (!window.matchMedia('(display-mode: standalone)').matches && !window.navigator.standalone) {
+            setTimeout(() => { document.getElementById('pwa-aggressive-modal').style.display = 'flex'; }, 1500);
         }
+        if (localStorage.getItem('theme') === 'dark') document.body.classList.add('dark-theme');
+        const token = localStorage.getItem('crm_token'); loggedUser = localStorage.getItem('crm_user');
+        if(token && loggedUser) {
+            document.getElementById('login-view').style.display = 'none'; document.getElementById('main-app').style.display = 'block';
+            fetchLiveDatabase(); fetchReferenceItems();
+        } else { generateCaptcha(); }
     });
 
-    function doLogin() {
-        const u = document.getElementById('log_user').value;
-        const p = document.getElementById('log_pass').value;
-        const c = parseInt(document.getElementById('log_captcha').value);
-
-        if(c !== captchaAns) {
-            alert("Hasil Captcha Salah! Buktikan Anda bukan robot.");
-            generateCaptcha(); return;
+    function triggerPWAInstall() {
+        if(deferredPrompt) {
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((choice) => {
+                if(choice.outcome === 'accepted') closePWAModal();
+                deferredPrompt = null;
+            });
         }
+    }
 
-        const btn = document.getElementById('btn-login');
-        btn.disabled = true; btn.innerText = "Memeriksa Sandi...";
+    function closePWAModal() { document.getElementById('pwa-aggressive-modal').style.display = 'none'; }
 
+    let localDB = { quotations: [], invoices: [], expenses: [], payments: [], customers: [], referenceItems: [], settings: {}, stats: {} };
+    let captchaAns = 0, loggedUser = "";
+
+    function generateCaptcha() {
+        const a = Math.floor(Math.random() * 10) + 1, b = Math.floor(Math.random() * 10) + 1;
+        captchaAns = a + b; document.getElementById('captcha-display').innerText = `${a} + ${b} =`;
+    }
+
+    function doLogin() {
+        const u = document.getElementById('log_user').value, p = document.getElementById('log_pass').value, c = parseInt(document.getElementById('log_captcha').value);
+        if(c !== captchaAns) { alert("Hasil Captcha Salah!"); generateCaptcha(); return; }
+        const btn = document.getElementById('btn-login'); btn.disabled = true; btn.innerText = "Memeriksa...";
         fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "login", data: { username: u, password: p } }) })
         .then(res => res.json()).then(res => {
             if(res.success) {
-                localStorage.setItem('crm_token', res.token);
-                localStorage.setItem('crm_user', res.username);
-                loggedUser = res.username;
-                document.getElementById('login-view').style.display = 'none';
-                document.getElementById('main-app').style.display = 'block';
+                localStorage.setItem('crm_token', res.token); localStorage.setItem('crm_user', res.username); loggedUser = res.username;
+                document.getElementById('login-view').style.display = 'none'; document.getElementById('main-app').style.display = 'block';
                 fetchLiveDatabase(); fetchReferenceItems();
-            } else {
-                alert(res.message); generateCaptcha();
-            }
-        }).finally(() => { btn.disabled = false; btn.innerText = "Autentikasi Aman"; });
+            } else { alert(res.message); generateCaptcha(); }
+        }).catch(() => { alert("Koneksi gagal! Pastikan Web App diset Anyone (Siapa Saja)."); }).finally(() => { btn.disabled = false; btn.innerText = "Autentikasi Aman"; });
     }
 
-    function doLogout() {
-        localStorage.removeItem('crm_token'); localStorage.removeItem('crm_user');
-        location.reload();
-    }
+    function doLogout() { localStorage.removeItem('crm_token'); localStorage.removeItem('crm_user'); location.reload(); }
 
     function changePassword() {
-        const oldP = document.getElementById('sec_old').value;
-        const newP = document.getElementById('sec_new').value;
-        if(!oldP || !newP) return alert("Isi lengkap password lama dan baru!");
-
+        const oldP = document.getElementById('sec_old').value, newP = document.getElementById('sec_new').value;
+        if(!oldP || !newP) return alert("Isi password lengkap!");
         fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "changePassword", data: { username: loggedUser, old_password: oldP, new_password: newP } }) })
-        .then(res => res.json()).then(res => {
-            if(res.success) {
-                alert("Password Berhasil Diganti! Silakan login ulang demi keamanan.");
-                doLogout();
-            } else { alert(res.message); }
-        });
+        .then(res => res.json()).then(res => { if(res.success) { alert("Password Diganti! Login ulang."); doLogout(); } else { alert(res.message); } });
     }
 
     function toggleTheme() { document.body.classList.toggle('dark-theme'); localStorage.setItem('theme', document.body.classList.contains('dark-theme') ? 'dark' : 'light');}
@@ -359,6 +298,9 @@
         if (viewId === 'view-quotation-list') renderQuotationList();
         if (viewId === 'view-invoice-list') renderInvoiceList();
         if (viewId === 'view-expense') renderExpenseList();
+        
+        // Auto scroll ke atas saat pindah view
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function safeFormatRupiah(val) {
@@ -373,8 +315,7 @@
         .then(res => res.json()).then(res => {
             if (res.success) {
                 localDB.referenceItems = res.data || [];
-                const datalist = document.getElementById('ref_items_list');
-                datalist.innerHTML = '';
+                const datalist = document.getElementById('ref_items_list'); datalist.innerHTML = '';
                 localDB.referenceItems.forEach(item => { const opt = document.createElement('option'); opt.value = item.Nama_Item; datalist.appendChild(opt); });
             }
         });
@@ -400,8 +341,7 @@
 
     function addItemRow() {
         const container = document.getElementById('item-container');
-        const newRow = document.createElement('div');
-        newRow.className = 'card item-row-card'; newRow.style.marginTop = '10px';
+        const newRow = document.createElement('div'); newRow.className = 'card item-row-card'; newRow.style.marginTop = '10px';
         newRow.innerHTML = `<div class="form-group" style="margin-bottom: 8px;"><label>Nama Produk / Jasa</label><input type="text" class="item_name" list="ref_items_list" oninput="handleItemSelect(this)"></div><div class="row" style="align-items: flex-start;"><div style="flex: 2;"><label>Spesifikasi</label><textarea class="item_spec" style="resize: vertical;" rows="2"></textarea></div><div style="flex: 0.6;"><label>Qty</label><input type="number" class="item_qty" value="1" oninput="calculateTotal()"></div><div style="flex: 1.4;"><label>Harga Satuan</label><input type="number" class="item_price" oninput="calculateTotal()"></div></div>`;
         container.appendChild(newRow);
     }
@@ -410,8 +350,7 @@
         let total = 0;
         const qtys = document.querySelectorAll('.item_qty'), prices = document.querySelectorAll('.item_price');
         document.querySelectorAll('.item_name').forEach((name, idx) => { total += (parseFloat(qtys[idx].value) || 0) * (parseFloat(prices[idx].value) || 0); });
-        document.getElementById('grandTotal').innerText = "Rp " + total.toLocaleString('id-ID');
-        return total;
+        document.getElementById('grandTotal').innerText = "Rp " + total.toLocaleString('id-ID'); return total;
     }
 
     function fetchLiveDatabase() {
@@ -422,10 +361,8 @@
                 localDB.quotations = res.data.quotations || []; localDB.invoices = res.data.invoices || [];
                 localDB.expenses = res.data.expenses || []; localDB.payments = res.data.payments || [];
                 localDB.customers = res.data.customers || []; localDB.stats = res.data.stats || {};
-                
                 const cList = document.getElementById('customer_list'); cList.innerHTML = '';
                 localDB.customers.forEach(c => { const opt = document.createElement('option'); opt.value = c.Nama_Klien; cList.appendChild(opt); });
-
                 renderDashboardStats(); renderQuotationList(); renderInvoiceList(); renderExpenseList();
             }
         }).finally(() => document.getElementById('dash-loading').style.display = 'none');
@@ -462,6 +399,7 @@
         document.getElementById('stat-net-profit').innerText = "Rp " + safeFormatRupiah(netProfit);
     }
 
+    // 🚀 FIX LOGIKA DAFTAR QUOTATION (Sesuai Arahan Lead Architect)
     function renderQuotationList(filterText = "") {
         const container = document.getElementById('qto-list-container'); container.innerHTML = '';
         let filtered = [...localDB.quotations].reverse();
@@ -470,28 +408,80 @@
         
         filtered.forEach(row => {
             const card = document.createElement('div'); card.className = 'card list-item';
-            let actionButtons = row.status === 'PENDING' ? `<div class="row" style="margin-top:12px;"><button class="btn btn-accent btn-sm" onclick="adminModifyStatus('${row.quote_id}', 'approveQuotation')">🟢 Approve</button><button class="btn btn-danger btn-sm" onclick="adminModifyStatus('${row.quote_id}', 'rejectQuotation')">🔴 Reject</button></div>` : '';
+            let actionButtons = '';
+            
+            // 👉 PENDING: Cuma bisa Approve / Reject
+            if (row.status === 'PENDING') {
+                actionButtons = `
+                    <div class="row" style="margin-top:12px;">
+                        <button class="btn btn-accent btn-sm" onclick="adminModifyStatus('${row.quote_id}', 'approveQuotation')">🟢 Approve</button>
+                        <button class="btn btn-danger btn-sm" onclick="adminModifyStatus('${row.quote_id}', 'rejectQuotation')">🔴 Reject</button>
+                    </div>
+                `;
+            } 
+            // 👉 REJECTED: Baru keluar tombol Hapus & Revisi!
+            else if (row.status === 'REJECTED') {
+                actionButtons = `
+                    <div class="row" style="margin-top:12px;">
+                        <button class="btn btn-accent btn-sm" onclick="reviseQuotation('${row.quote_id}')">✏️ Revisi Data</button>
+                        <button class="btn btn-secondary btn-sm" style="color:var(--danger); border-color:var(--danger);" onclick="deleteQuotation('${row.quote_id}')">🗑️ Hapus</button>
+                    </div>
+                `;
+            } 
+            // 👉 APPROVED: Bersih, tidak ada aksi edit/hapus.
+
             card.innerHTML = `<div class="flex-meta"><div><span class="id-badge">${row.quote_id}</span></div><span class="status-badge status-${row.status}">${row.status}</span></div><div style="font-weight:bold; font-size:15px; margin-bottom:4px; white-space: pre-wrap;">${row.client_name}</div><div style="color:var(--text-muted); font-size:12px; margin-bottom:8px;">Skema: ${row.payment_term} | Rp ${safeFormatRupiah(row.total_amount)}</div><div class="row" style="gap:6px; margin-bottom:0;"><button class="btn btn-secondary btn-sm" onclick="window.open('${row.pdf_url}', '_blank')">📄 Berkas PDF</button></div>${actionButtons}`;
             container.appendChild(card);
         });
     }
     function filterQuotations() { renderQuotationList(document.getElementById('search-qto').value); }
 
+    function reviseQuotation(quoteId) {
+        const qto = localDB.quotations.find(q => q.quote_id == quoteId);
+        if(!qto) return alert("Gagal mendeteksi dokumen.");
+        
+        const nameParts = qto.client_name.split('\n');
+        const cName = nameParts[0] || "";
+        const cAddr = nameParts.slice(1).join('\n') || "";
+
+        document.getElementById('dash-loading').style.display = 'block';
+        fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getQuotationItems", data: { quote_id: quoteId } }) })
+        .then(res => res.json()).then(res => {
+            if(res.success) {
+                document.getElementById('client_name').value = cName;
+                document.getElementById('client_address').value = cAddr;
+                document.getElementById('client_whatsapp').value = qto.client_whatsapp || '';
+                document.getElementById('payment_term').value = qto.payment_term || '';
+
+                const container = document.getElementById('item-container'); container.innerHTML = '';
+                res.data.forEach(item => {
+                    const newRow = document.createElement('div'); newRow.className = 'card item-row-card'; newRow.style.marginTop = '10px';
+                    newRow.innerHTML = `<div class="form-group" style="margin-bottom: 8px;"><label>Nama Produk / Jasa</label><input type="text" class="item_name" list="ref_items_list" value="${item.Nama_Barang}" oninput="handleItemSelect(this)"></div><div class="row" style="align-items: flex-start;"><div style="flex: 2;"><label>Spesifikasi</label><textarea class="item_spec" style="resize: vertical;" rows="2">${item.Spesifikasi}</textarea></div><div style="flex: 0.6;"><label>Qty</label><input type="number" class="item_qty" value="${item.Qty}" oninput="calculateTotal()"></div><div style="flex: 1.4;"><label>Harga Satuan</label><input type="number" class="item_price" value="${item.Harga_Satuan}" oninput="calculateTotal()"></div></div>`;
+                    container.appendChild(newRow);
+                });
+                calculateTotal(); switchView('view-input-quotation');
+            } else { alert("Gagal memuat pecahan sub-item."); }
+        }).finally(() => document.getElementById('dash-loading').style.display = 'none');
+    }
+
+    function deleteQuotation(quoteId) {
+        if(!confirm(`Apakah Anda yakin ingin MENGHAPUS PERMANEN penawaran ${quoteId}?`)) return;
+        fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "deleteQuotation", data: { quote_id: quoteId } }) })
+        .then(res => res.json()).then(res => { alert("Dokumen dihapus total!"); fetchLiveDatabase(); });
+    }
+
     function renderInvoiceList(filterText = "") {
         const container = document.getElementById('inv-list-container'); container.innerHTML = '';
         let filtered = [...localDB.invoices].reverse();
         if(filterText.trim()) filtered = filtered.filter(row => String(row.invoice_id).toLowerCase().includes(filterText.toLowerCase()) || String(row.client_name).toLowerCase().includes(filterText.toLowerCase()));
-        
         filtered.forEach(row => {
             const card = document.createElement('div'); card.className = 'card list-item';
             const paymentsForInv = localDB.payments.filter(p => p.Invoice_ID === row.invoice_id);
             let totalTerbayar = 0; paymentsForInv.forEach(p => totalTerbayar += Number(p.Nominal));
             let sisa = Number(row.total_amount) - totalTerbayar;
-
             let manualAction = (row.status !== 'PAID') ? `<button class="btn btn-accent btn-sm" style="margin-top:10px; width: 100%;" onclick="confirmPartialPayment('${row.invoice_id}', ${sisa})">💸 Catat Pembayaran Masuk (Rp ${safeFormatRupiah(sisa)})</button>` : '';
             let receiptLinks = '';
             paymentsForInv.forEach((p, idx) => { if(p.PDF_Url && p.PDF_Url !== 'FAILED') receiptLinks += `<button class="btn btn-secondary btn-sm" style="font-size: 10px; margin-top:5px;" onclick="window.open('${p.PDF_Url}', '_blank')">📄 Kuitansi ${idx+1}: Rp ${safeFormatRupiah(p.Nominal)}</button>`; });
-
             card.innerHTML = `<div class="flex-meta"><span class="id-badge">${row.invoice_id}</span><span class="status-badge status-${row.status}">${row.status}</span></div><div style="font-weight:bold; font-size:15px; margin-bottom:4px; white-space: pre-wrap;">${row.client_name}</div><div style="color:var(--text-muted); font-size:12px;">WA: ${row.client_whatsapp} | Ref QTO: ${row.quote_id}</div><div style="margin-top:6px; font-size:13px; color:var(--text-muted);">Total Tagihan: <strong style="color:var(--text);">Rp ${safeFormatRupiah(row.total_amount)}</strong><br>Total Terbayar: <strong style="color:var(--accent);">Rp ${safeFormatRupiah(totalTerbayar)}</strong></div>${receiptLinks}${manualAction}`;
             container.appendChild(card);
         });
@@ -499,15 +489,11 @@
     function filterInvoices() { renderInvoiceList(document.getElementById('search-inv').value); }
 
     function confirmPartialPayment(invId, maxBayar) {
-        let nominal = prompt(`Masukkan Nominal Uang Masuk (Sisa Tagihan: Rp ${safeFormatRupiah(maxBayar)}).\nKetikan angka tanpa titik/koma:`, maxBayar);
+        let nominal = prompt(`Masukkan Nominal Uang Masuk (Sisa Tagihan: Rp ${safeFormatRupiah(maxBayar)}):\nKetikan angka tanpa titik/koma:`, maxBayar);
         if (!nominal || isNaN(nominal)) return;
-        let keterangan = prompt("Keterangan Pembayaran (Contoh: DP 50%, Termin I, atau Pelunasan):", "Pembayaran Termin");
-        if (!keterangan) return;
-
-        if (!confirm(`Tindak lanjut catat Rp ${safeFormatRupiah(nominal)} untuk ${keterangan}?`)) return;
-        
+        let keterangan = prompt("Keterangan Pembayaran (Contoh: DP, Cicilan 1, Pelunasan):", "Pembayaran Termin"); if (!keterangan) return;
         fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "confirmPayment", data: { invoice_id: invId, nominal_bayar: nominal, keterangan: keterangan } }) })
-        .then(res => res.json()).then(res => { alert("Dana berhasil dicatat dan Kuitansi telah terkirim!"); fetchLiveDatabase(); });
+        .then(res => res.json()).then(res => { alert("Kuitansi terkirim!"); fetchLiveDatabase(); });
     }
 
     function renderExpenseList(filterText = "") {
@@ -524,33 +510,21 @@
     function filterExpenses() { renderExpenseList(document.getElementById('search-exp').value); }
 
     function adminModifyStatus(qId, targetAction) {
-        if (!confirm(`Proses tindakan persetujuan ini pada ${qId}?`)) return;
-        fetch(API_URL, { method: "POST", body: JSON.stringify({ action: targetAction, data: { quote_id: qId } }) })
-        .then(res => res.json()).then(res => { alert('Status tersimpan!'); fetchLiveDatabase(); });
+        fetch(API_URL, { method: "POST", body: JSON.stringify({ action: targetAction, data: { quote_id: qId } }) }).then(res => res.json()).then(() => { alert('Status tersimpan!'); fetchLiveDatabase(); });
     }
 
     function saveSettings() {
         const btn = document.getElementById('btn-save-settings'); btn.disabled = true; btn.innerText = "Menyimpan...";
-        const payload = { action: "saveSettings", data: {
-            Company_Name: document.getElementById('set_company_name').value, Address: document.getElementById('set_address').value,
-            Company_WA: document.getElementById('set_company_wa').value, Company_Email: document.getElementById('set_company_email').value, Company_Website: document.getElementById('set_company_website').value,
-            Bank_Name: document.getElementById('set_bank_name').value, Bank_Account: document.getElementById('set_bank_account').value, Account_Holder: document.getElementById('set_account_holder').value, 
-            WA_API: document.getElementById('set_wa_api').value, WA_Session: document.getElementById('set_wa_session').value, 
-            Quotation_Prologue: document.getElementById('set_quotation_prologue').value, Invoice_Terms: document.getElementById('set_invoice_terms').value,
-            OneSignal_App_ID: document.getElementById('set_os_appid').value, OneSignal_REST_Key: document.getElementById('set_os_key').value
-        }};
-        fetch(API_URL, { method: "POST", body: JSON.stringify(payload) })
-        .then(res => res.json()).then(res => { alert("Pengaturan berhasil disimpan."); fetchLiveDatabase(); })
-        .finally(() => { btn.disabled = false; btn.innerText = "Simpan Profil Global"; });
+        const payload = { action: "saveSettings", data: { Company_Name: document.getElementById('set_company_name').value, Address: document.getElementById('set_address').value, Company_WA: document.getElementById('set_company_wa').value, Company_Email: document.getElementById('set_company_email').value, Company_Website: document.getElementById('set_company_website').value, Bank_Name: document.getElementById('set_bank_name').value, Bank_Account: document.getElementById('set_bank_account').value, Account_Holder: document.getElementById('set_account_holder').value, WA_API: document.getElementById('set_wa_api').value, WA_Session: document.getElementById('set_wa_session').value, Quotation_Prologue: document.getElementById('set_quotation_prologue').value, Invoice_Terms: document.getElementById('set_invoice_terms').value, OneSignal_App_ID: document.getElementById('set_os_appid').value, OneSignal_REST_Key: document.getElementById('set_os_key').value }};
+        fetch(API_URL, { method: "POST", body: JSON.stringify(payload) }).then(res => res.json()).then(() => { alert("Pengaturan disimpan."); fetchLiveDatabase(); }).finally(() => { btn.disabled = false; btn.innerText = "Simpan Profil Global"; });
     }
 
     function submitExpense() {
-        fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "createExpense", data: { Tanggal: new Date().toLocaleDateString('id-ID'), Kategori: document.getElementById('exp_kategori').value, Deskripsi: document.getElementById('exp_deskripsi').value, Nominal: parseFloat(document.getElementById('exp_nominal').value) || 0, Bukti_File_Link: document.getElementById('exp_bukti').value } }) })
-        .then(res => res.json()).then(res => { alert("Pengeluaran tercatat!"); fetchLiveDatabase(); switchView('view-dashboard'); });
+        fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "createExpense", data: { Tanggal: new Date().toLocaleDateString('id-ID'), Kategori: document.getElementById('exp_kategori').value, Deskripsi: document.getElementById('exp_deskripsi').value, Nominal: parseFloat(document.getElementById('exp_nominal').value) || 0, Bukti_File_Link: document.getElementById('exp_bukti').value } }) }).then(res => res.json()).then(() => { alert("Tercatat!"); fetchLiveDatabase(); switchView('view-dashboard'); });
     }
 
     function submitQuotation() {
-        const btn = document.getElementById('btn-submit'); btn.disabled = true; btn.innerText = "Membuat Berkas...";
+        const btn = document.getElementById('btn-submit'); btn.disabled = true; btn.innerText = "Memproses Berkas...";
         const items = [];
         const names = document.querySelectorAll('.item_name'), specs = document.querySelectorAll('.item_spec'), qtys = document.querySelectorAll('.item_qty'), prices = document.querySelectorAll('.item_price');
         names.forEach((nameInput, idx) => {
@@ -561,14 +535,8 @@
                 if (!localDB.referenceItems.find(r => r.Nama_Item.toLowerCase() === n.toLowerCase())) fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "createReferenceItem", data: { Nama_Item: n, Deskripsi_Lengkap: s, Harga_Satuan: p } }) });
             }
         });
-        
         fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "createQuotation", data: { client_name: document.getElementById('client_name').value, client_address: document.getElementById('client_address').value, client_whatsapp: document.getElementById('client_whatsapp').value, payment_term: document.getElementById('payment_term').value || "Termin / Kesepakatan", total_amount: calculateTotal(), items: items } }) })
-        .then(res => res.json()).then(res => {
-            alert('Quotation berhasil di-commit! Klien Anda sudah menerima dokumennya via WA.');
-            document.getElementById('client_name').value = ''; document.getElementById('client_address').value = ''; document.getElementById('client_whatsapp').value = '';
-            document.getElementById('item-container').innerHTML = `<div class="card item-row-card"><div class="form-group" style="margin-bottom: 8px;"><label>Nama Produk / Jasa</label><input type="text" class="item_name" list="ref_items_list" oninput="handleItemSelect(this)"></div><div class="row" style="align-items: flex-start;"><div style="flex: 2;"><label>Spesifikasi</label><textarea class="item_spec" style="resize: vertical;" rows="2"></textarea></div><div style="flex: 0.6;"><label>Qty</label><input type="number" class="item_qty" value="1" oninput="calculateTotal()"></div><div style="flex: 1.4;"><label>Harga Satuan</label><input type="number" class="item_price" oninput="calculateTotal()"></div></div></div>`;
-            calculateTotal(); fetchLiveDatabase(); switchView('view-dashboard'); 
-        }).finally(() => { btn.disabled = false; btn.innerText = "Kirim Dokumen Digital PDF"; });
+        .then(res => res.json()).then(() => { alert('Quotation meluncur!'); document.getElementById('client_name').value = ''; document.getElementById('client_address').value = ''; document.getElementById('client_whatsapp').value = ''; document.getElementById('item-container').innerHTML = `<div class="card item-row-card"><div class="form-group" style="margin-bottom: 8px;"><label>Nama Produk / Jasa</label><input type="text" class="item_name" list="ref_items_list" oninput="handleItemSelect(this)"></div><div class="row" style="align-items: flex-start;"><div style="flex: 2;"><label>Spesifikasi</label><textarea class="item_spec" style="resize: vertical;" rows="2"></textarea></div><div style="flex: 0.6;"><label>Qty</label><input type="number" class="item_qty" value="1" oninput="calculateTotal()"></div><div style="flex: 1.4;"><label>Harga Satuan</label><input type="number" class="item_price" oninput="calculateTotal()"></div></div></div>`; calculateTotal(); fetchLiveDatabase(); switchView('view-dashboard'); }).finally(() => { btn.disabled = false; btn.innerText = "Simpan & Kirim Penawaran"; });
     }
 </script>
 </body>
