@@ -111,7 +111,7 @@
 </head>
 <body class="light-theme">
 
-    <div id="fab-add" class="fab-btn" onclick="switchView('view-input-quotation', null)"><span style="margin-top:-4px;">+</span></div>
+    <div id="fab-add" class="fab-btn" onclick="openFab()"><span style="margin-top:-4px;">+</span></div>
 
     <div id="sidebar-overlay" class="sidebar-overlay" onclick="toggleSidebar()"></div>
     <div id="sidebar-menu" class="sidebar">
@@ -216,7 +216,7 @@
         </div>
 
         <div id="view-input-quotation" class="spa-view">
-            <h2>Buat Penawaran Baru / Revisi</h2>
+            <h2 id="title-input-quotation">Buat Penawaran Baru</h2>
             <div class="card">
                 <div class="form-group"><label>Nama Klien / Instansi</label><input type="text" id="client_name" list="customer_list" placeholder="Ketik nama klien..." oninput="handleCustomerSelect(this)"></div>
                 <div class="form-group"><label>Alamat Klien Lengkap</label><textarea id="client_address" placeholder="Alamat lengkap..." style="resize: vertical;" rows="2"></textarea></div>
@@ -316,6 +316,9 @@
     <script>
     const API_URL = "https://script.google.com/macros/s/AKfycbyhoO7fOFvVCUHqtZpdu_kHAynlA5or6dkpHK0eGHtUiDOb4M3EbIllpr4vDapIXKCzWg/exec";
     const APP_LOGO_URL = "https://cdn-icons-png.flaticon.com/512/3003/3003261.png"; 
+
+    // 💡 PENYIMPAN ID MEMORI REVISI (PENTING AGAR TIDAK DOBEL)
+    let currentReviseQuoteId = null;
 
     if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW Gagal:', err)); }); }
     document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
@@ -441,23 +444,37 @@
         }).catch(e => console.log("Polling WA err:", e));
     }
 
-    // 🚀 LOGIKA FAB & SWITCH VIEW CERDAS
+    // 🚀 LOGIKA FAB PINTAR (MEMISAHKAN REVISI DAN QUOTATION BARU)
+    function openFab() {
+        const activeView = document.querySelector('.spa-view.active').id;
+        
+        if (activeView === 'view-quotation-list' || activeView === 'view-dashboard') {
+            currentReviseQuoteId = null; // RESET ID! Ini pembuatan murni, bukan revisi
+            document.getElementById('title-input-quotation').innerText = "Buat Penawaran Baru";
+            document.getElementById('client_name').value = '';
+            document.getElementById('client_address').value = '';
+            document.getElementById('client_whatsapp').value = '';
+            document.getElementById('payment_term').value = '';
+            document.getElementById('item-container').innerHTML = `<div class="card item-row-card"><div class="form-group" style="margin-bottom: 8px;"><label>Nama Produk / Jasa</label><input type="text" class="item_name" list="ref_items_list" oninput="handleItemSelect(this)"></div><div class="row" style="align-items: flex-start;"><div style="flex: 2;"><label>Spesifikasi</label><textarea class="item_spec" style="resize: vertical;" rows="2"></textarea></div><div style="flex: 0.6;"><label>Qty</label><input type="number" class="item_qty" value="1" oninput="calculateTotal()"></div><div style="flex: 1.4;"><label>Harga Satuan</label><input type="number" class="item_price" oninput="calculateTotal()"></div></div></div>`;
+            calculateTotal();
+            switchView('view-input-quotation', null);
+        } else if (activeView === 'view-expense') {
+            document.getElementById('exp_deskripsi').value = '';
+            document.getElementById('exp_nominal').value = '';
+            document.getElementById('exp_bukti').value = '';
+            switchView('view-input-expense', null);
+        }
+    }
+
     function switchView(viewId, navElement) {
         document.querySelectorAll('.spa-view').forEach(view => { view.classList.remove('active'); });
         if(navElement) { document.querySelectorAll('.nav-item').forEach(item => { item.classList.remove('active'); }); }
         
         const fab = document.getElementById('fab-add');
-        
-        // Atur Gembok FAB Berdasarkan Konteks
         if(viewId === 'view-input-quotation' || viewId === 'view-input-expense' || viewId === 'view-settings') { 
             fab.style.display = 'none'; 
         } else { 
             fab.style.display = 'flex'; 
-            if (viewId === 'view-expense') {
-                fab.onclick = () => switchView('view-input-expense', null); // FAB ke Input Pengeluaran
-            } else {
-                fab.onclick = () => switchView('view-input-quotation', null); // FAB ke Input Penawaran
-            }
         }
 
         setTimeout(() => {
@@ -483,7 +500,7 @@
         }).catch(() => { const backup = localStorage.getItem('crm_offline_ref_items'); if(backup) { localDB.referenceItems = JSON.parse(backup); const datalist = document.getElementById('ref_items_list'); datalist.innerHTML = ''; localDB.referenceItems.forEach(item => { const opt = document.createElement('option'); opt.value = item.Nama_Item; datalist.appendChild(opt); }); } });
     }
 
-    function handleItemSelect(el) { const matchedItem = localDB.referenceItems.find(i => i.Nama_Item === el.value); if (matchedItem) { const rowCard = el.closest('.item-row-card'); rowCard.querySelector('.item_spec').value = matchedItem.Deskripsi_Lengkap || ''; rowCard.querySelector('.item_price').value = matchedItem.Harga_Satuan || 0; calculateTotal(); } }
+    function handleItemSelect(el) { const matchedItem = localDB.referenceItems.find(i => i.Nama_Item.trim().toLowerCase() === el.value.trim().toLowerCase()); if (matchedItem) { const rowCard = el.closest('.item-row-card'); rowCard.querySelector('.item_spec').value = matchedItem.Deskripsi_Lengkap || ''; rowCard.querySelector('.item_price').value = matchedItem.Harga_Satuan || 0; calculateTotal(); } }
 
     function handleCustomerSelect(el) { const matched = localDB.customers.find(i => i.Nama_Klien === el.value); if (matched) { document.getElementById('client_address').value = matched.Alamat || ''; document.getElementById('client_whatsapp').value = matched.WhatsApp || ''; } }
 
@@ -560,7 +577,6 @@
         } else { document.getElementById('preview-items-container').innerHTML = '<div style="color:var(--danger); background:rgba(220,38,38,0.1); padding:15px; border-radius:8px;">⚠️ Rincian item tidak dimuat saat Offline.</div>'; }
     }
     
-    // 🚀 DETAIL PREVIEW PENGELUARAN
     function showExpensePreview(expId) {
         const exp = localDB.expenses.find(e => e.ID_Pengeluaran == expId); 
         if(!exp) return;
@@ -587,10 +603,16 @@
 
     function closePreview() { document.getElementById('detail-modal').classList.remove('open'); }
 
+    // 🚀 LOGIKA REVISI: Sistem mengingat bahwa Suhu sedang MEREVISI Quotation (bukan buat baru)
     function reviseQuotation(quoteId) {
         if(!navigator.onLine) return alert("❌ Revisi butuh internet.");
         const qto = localDB.quotations.find(q => q.quote_id == quoteId); if(!qto) return;
         const nameParts = qto.client_name.split('\n'); const cName = nameParts[0] || ""; const cAddr = nameParts.slice(1).join('\n') || "";
+        
+        // Simpan ID agar sistem tahu ini revisi!
+        currentReviseQuoteId = quoteId;
+        document.getElementById('title-input-quotation').innerText = `Revisi: ${quoteId}`;
+
         document.getElementById('dash-loading').style.display = 'block';
         fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "getQuotationItems", data: { quote_id: quoteId } }) }).then(res => res.json()).then(res => {
             if(res.success) {
@@ -630,15 +652,12 @@
 
     function confirmPartialPayment(invId, maxBayar) { if(!navigator.onLine) return alert("❌ Catat pembayaran butuh internet."); let nominal = prompt(`Nominal Masuk (Sisa: Rp ${safeFormatRupiah(maxBayar)}):\nKetikan angka tanpa titik:`, maxBayar); if (!nominal || isNaN(nominal)) return; let keterangan = prompt("Keterangan:", "Pembayaran Termin"); if (!keterangan) return; fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "confirmPayment", data: { invoice_id: invId, nominal_bayar: nominal, keterangan: keterangan } }) }).then(res => res.json()).then(res => { alert("Kuitansi terkirim!"); fetchLiveDatabase(); }); }
 
-    // 🚀 DAFTAR PENGELUARAN YANG BISA DI KLIK (CARD)
     function renderExpenseList(filterText = "") { 
         const container = document.getElementById('exp-list-container'); 
         container.innerHTML = ''; 
         let filtered = [...localDB.expenses].reverse(); 
         if(filterText.trim()) filtered = filtered.filter(row => String(row.Deskripsi).toLowerCase().includes(filterText.toLowerCase()) || String(row.Kategori).toLowerCase().includes(filterText.toLowerCase())); 
-        
         if (filtered.length === 0) return container.innerHTML = '<div style="text-align:center;padding:20px;">Data pengeluaran tidak ditemukan.</div>';
-
         filtered.forEach(row => { 
             const card = document.createElement('div'); 
             card.className = 'card list-item'; 
@@ -683,7 +702,6 @@
         fetch(API_URL, { method: "POST", body: JSON.stringify(payload) }).then(res => res.json()).then(() => { alert("Disimpan."); fetchLiveDatabase(); }).finally(() => { btn.disabled = false; btn.innerText = "Simpan Profil Global"; }); 
     }
 
-    // 🚀 INPUT PENGELUARAN (KEMBALI KE LIST SETELAH SUBMIT)
     function submitExpense() { 
         if(!navigator.onLine) return alert("❌ Butuh internet."); 
         const btn = document.getElementById('btn-submit-expense');
@@ -691,23 +709,55 @@
         fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "createExpense", data: { Tanggal: new Date().toLocaleDateString('id-ID'), Kategori: document.getElementById('exp_kategori').value, Deskripsi: document.getElementById('exp_deskripsi').value, Nominal: parseFloat(document.getElementById('exp_nominal').value) || 0, Bukti_File_Link: document.getElementById('exp_bukti').value } }) })
         .then(res => res.json()).then(() => { 
             alert("Pengeluaran Tercatat!"); 
-            document.getElementById('exp_deskripsi').value = '';
-            document.getElementById('exp_nominal').value = '';
-            document.getElementById('exp_bukti').value = '';
-            fetchLiveDatabase(); 
-            // Otomatis pindah ke layar daftar Pengeluaran (Cost)
-            switchView('view-expense', document.querySelectorAll('.nav-item')[3]); 
-        })
-        .finally(() => { btn.disabled = false; btn.innerText = "Commit Pengeluaran"; }); 
+            document.getElementById('exp_deskripsi').value = ''; document.getElementById('exp_nominal').value = ''; document.getElementById('exp_bukti').value = '';
+            fetchLiveDatabase(); switchView('view-expense', document.querySelectorAll('.nav-item')[3]); 
+        }).finally(() => { btn.disabled = false; btn.innerText = "Commit Pengeluaran"; }); 
     }
 
+    // 🚀 LOGIKA SUBMIT QUOTATION YANG SUDAH PINTAR (UPSERT REFERENCE & CEK REVISI)
     function submitQuotation() {
         if(!navigator.onLine) return alert("❌ Membuat Quotation butuh internet.");
         const btn = document.getElementById('btn-submit'); btn.disabled = true; btn.innerText = "Memproses Berkas...";
-        const items = []; const names = document.querySelectorAll('.item_name'), specs = document.querySelectorAll('.item_spec'), qtys = document.querySelectorAll('.item_qty'), prices = document.querySelectorAll('.item_price');
-        names.forEach((nameInput, idx) => { const n = nameInput.value.trim(); if (n !== "") { const s = specs[idx].value, p = parseFloat(prices[idx].value) || 0; items.push({ nama_barang: n, spesifikasi: s, qty: parseFloat(qtys[idx].value) || 1, harga: p }); if (!localDB.referenceItems.find(r => r.Nama_Item.toLowerCase() === n.toLowerCase())) fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "createReferenceItem", data: { Nama_Item: n, Deskripsi_Lengkap: s, Harga_Satuan: p } }) }); } });
-        fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "createQuotation", data: { client_name: document.getElementById('client_name').value, client_address: document.getElementById('client_address').value, client_whatsapp: document.getElementById('client_whatsapp').value, payment_term: document.getElementById('payment_term').value || "Termin / Kesepakatan", total_amount: calculateTotal(), items: items } }) })
-        .then(res => res.json()).then(() => { alert('Quotation meluncur!'); document.getElementById('client_name').value = ''; document.getElementById('client_address').value = ''; document.getElementById('client_whatsapp').value = ''; document.getElementById('item-container').innerHTML = `<div class="card item-row-card"><div class="form-group" style="margin-bottom: 8px;"><label>Nama Produk / Jasa</label><input type="text" class="item_name" list="ref_items_list" oninput="handleItemSelect(this)"></div><div class="row" style="align-items: flex-start;"><div style="flex: 2;"><label>Spesifikasi</label><textarea class="item_spec" style="resize: vertical;" rows="2"></textarea></div><div style="flex: 0.6;"><label>Qty</label><input type="number" class="item_qty" value="1" oninput="calculateTotal()"></div><div style="flex: 1.4;"><label>Harga Satuan</label><input type="number" class="item_price" oninput="calculateTotal()"></div></div></div>`; calculateTotal(); fetchLiveDatabase(); switchView('view-dashboard'); }).finally(() => { btn.disabled = false; btn.innerText = "Simpan & Kirim Penawaran"; });
+        const items = []; 
+        const names = document.querySelectorAll('.item_name'), specs = document.querySelectorAll('.item_spec'), qtys = document.querySelectorAll('.item_qty'), prices = document.querySelectorAll('.item_price');
+        
+        names.forEach((nameInput, idx) => { 
+            const nTrim = nameInput.value.trim(); 
+            if (nTrim !== "") { 
+                const s = specs[idx].value, p = parseFloat(prices[idx].value) || 0; 
+                items.push({ nama_barang: nTrim, spesifikasi: s, qty: parseFloat(qtys[idx].value) || 1, harga: p }); 
+                
+                // Minta Backend untuk cek: Kalau ada, Update. Kalau nggak, Insert.
+                const matchedLocal = localDB.referenceItems.find(r => r.Nama_Item.trim().toLowerCase() === nTrim.toLowerCase());
+                if (!matchedLocal || matchedLocal.Harga_Satuan != p || matchedLocal.Deskripsi_Lengkap != s) {
+                    fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "createReferenceItem", data: { Nama_Item: nTrim, Deskripsi_Lengkap: s, Harga_Satuan: p } }) }); 
+                }
+            } 
+        });
+
+        // Backend akan menggunakan quote_id ini untuk HAPUS data barang yang lama (Mencegah Duplicate Item QTO)
+        const payloadData = { 
+            quote_id: currentReviseQuoteId, 
+            client_name: document.getElementById('client_name').value, 
+            client_address: document.getElementById('client_address').value, 
+            client_whatsapp: document.getElementById('client_whatsapp').value, 
+            payment_term: document.getElementById('payment_term').value || "Termin / Kesepakatan", 
+            total_amount: calculateTotal(), 
+            items: items 
+        };
+
+        fetch(API_URL, { method: "POST", body: JSON.stringify({ action: "createQuotation", data: payloadData }) })
+        .then(res => res.json()).then(() => { 
+            alert(currentReviseQuoteId ? 'Revisi Berhasil Disimpan!' : 'Quotation meluncur!'); 
+            
+            // RESET MURNI
+            currentReviseQuoteId = null; 
+            document.getElementById('title-input-quotation').innerText = "Buat Penawaran Baru";
+            document.getElementById('client_name').value = ''; document.getElementById('client_address').value = ''; document.getElementById('client_whatsapp').value = ''; document.getElementById('payment_term').value = '';
+            document.getElementById('item-container').innerHTML = `<div class="card item-row-card"><div class="form-group" style="margin-bottom: 8px;"><label>Nama Produk / Jasa</label><input type="text" class="item_name" list="ref_items_list" oninput="handleItemSelect(this)"></div><div class="row" style="align-items: flex-start;"><div style="flex: 2;"><label>Spesifikasi</label><textarea class="item_spec" style="resize: vertical;" rows="2"></textarea></div><div style="flex: 0.6;"><label>Qty</label><input type="number" class="item_qty" value="1" oninput="calculateTotal()"></div><div style="flex: 1.4;"><label>Harga Satuan</label><input type="number" class="item_price" oninput="calculateTotal()"></div></div></div>`; 
+            
+            calculateTotal(); fetchLiveDatabase(); switchView('view-dashboard'); 
+        }).finally(() => { btn.disabled = false; btn.innerText = "Simpan & Kirim Penawaran"; });
     }
 </script>
 </body>
