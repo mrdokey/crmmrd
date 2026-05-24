@@ -701,29 +701,10 @@
             
             let manualAction = (row.status !== 'PAID') ? `<button class="btn btn-accent btn-sm" style="margin-top:10px; width: 100%;" onclick="confirmPartialPayment('${row.invoice_id}', ${sisa})">💸 Catat Pembayaran (Sisa Rp ${safeFormatRupiah(sisa)})</button>` : '';
             let invoicePdfAction = '';
-if (row.pdf_url && row.pdf_url.trim() !== '') { 
-    invoicePdfAction = `
-        <button class="btn btn-secondary btn-sm" style="width:100%; margin-top:8px; border-color:var(--primary); color:var(--primary);" onclick="window.open('${row.pdf_url}', '_blank')">📄 Buka & Unduh PDF Invoice</button>
-        
-        <button class="btn btn-sm" style="width:100%; margin-top:6px; background:#16a34a; color:white; border:none;" onclick="kirimWaDokumen('INVOICE', '${row.invoice_id || row.id}', '${row.client_name}', '${row.total_amount}', '${row.pdf_url}')">💬 Kirim Invoice ke WA</button>
-    `; 
-}
- 
-            
+            if (row.pdf_url && row.pdf_url.trim() !== '') { invoicePdfAction = `<button class="btn btn-secondary btn-sm" style="width:100%; margin-top:8px; border-color:var(--primary); color:var(--primary);" onclick="window.open('${row.pdf_url}', '_blank')">📄 Buka & Unduh PDF Invoice</button>`; } 
             else { invoicePdfAction = `<button class="btn btn-secondary btn-sm" style="width:100%; margin-top:8px; background:var(--primary-soft); color:var(--primary);" onclick="triggerInvoicePdf(event, '${row.invoice_id}')">⚙️ Buat PDF Invoice Resmi</button>`; }
 
-            let receiptLinks = ''; 
-paymentsForInv.forEach((p, idx) => { 
-    if(p.PDF_Url && p.PDF_Url !== 'FAILED') {
-        receiptLinks += `
-        <div style="margin-top: 8px; padding-bottom: 8px; border-bottom: 1px dashed #cbd5e1;">
-            <button class="btn btn-secondary btn-sm" style="font-size: 10px; width: 100%; border-color:var(--primary); color:var(--primary);" onclick="window.open('${p.PDF_Url}', '_blank')">📄 Kuitansi ${idx+1}: Rp ${safeFormatRupiah(p.Nominal)}</button>
-            
-            <button class="btn btn-sm" style="font-size: 10px; width: 100%; margin-top:4px; background:#16a34a; color:white; border:none;" onclick="kirimWaDokumen('KUITANSI', '${p.Payment_ID || p.id || 'Pembayaran ' + (idx+1)}', '${row.client_name}', '${p.Nominal}', '${p.PDF_Url}')">💬 Kirim WA Kuitansi ${idx+1}</button>
-        </div>`; 
-    } 
-});
-
+            let receiptLinks = ''; paymentsForInv.forEach((p, idx) => { if(p.PDF_Url && p.PDF_Url !== 'FAILED') receiptLinks += `<button class="btn btn-secondary btn-sm" style="font-size: 10px; margin-top:5px;" onclick="window.open('${p.PDF_Url}', '_blank')">📄 Kuitansi ${idx+1}: Rp ${safeFormatRupiah(p.Nominal)}</button>`; });
             card.innerHTML = `<div class="flex-meta"><span class="id-badge">${row.invoice_id}</span><span class="status-badge status-${row.status}">${row.status}</span></div><div style="font-weight:bold; font-size:15px; margin-bottom:4px; white-space: pre-wrap;">${row.client_name}</div><div style="color:var(--text-muted); font-size:12px;">Ref QTO: ${row.quote_id}</div><div style="margin-top:6px; font-size:13px; color:var(--text-muted);">Total Tagihan: <strong style="color:var(--text);">Rp ${safeFormatRupiah(row.total_amount)}</strong><br>Total Terbayar: <strong style="color:var(--accent);">Rp ${safeFormatRupiah(totalTerbayar)}</strong></div>${invoicePdfAction}${receiptLinks}${manualAction}`;
             container.appendChild(card);
         });
