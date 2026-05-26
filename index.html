@@ -274,7 +274,37 @@
             </div>
         </div>
 
-        <div id="view-settings" class="spa-view">
+        
+<div id="view-input-invoice" class="spa-view">
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom: 12px;">
+        <button class="btn btn-secondary btn-sm" style="width:auto;" onclick="switchView('view-invoice-list', document.querySelectorAll('.nav-item')[2])">← Kembali</button>
+        <h2 id="title-input-invoice" style="margin:0;">Buat Invoice Manual</h2>
+    </div>
+    <div class="card" style="border-top: 4px solid var(--accent);">
+        <p style="color:var(--text-muted); font-size:12px; line-height:1.5; margin-bottom:15px;">Invoice ini dibuat langsung dari input manual tanpa referensi quotation. Isi data klien, tambahkan item, lalu simpan sebagai invoice resmi.</p>
+        <div class="form-group"><label>Nomor Invoice</label><input type="text" id="manual_invoice_id" placeholder="INV-MAN-0001"></div>
+        <div class="form-group"><label>Nama Klien / Instansi</label><input type="text" id="manual_client_name" list="customer_list" placeholder="Ketik nama baru atau pilih yang sudah ada..." oninput="handleCustomerSelect(this)"><small style="display:block; margin-top:6px; color:var(--text-muted); font-size:11px;">Boleh ketik baru. Jika cocok dengan database customer, alamat dan WhatsApp akan terisi otomatis.</small></div>
+        <div class="form-group"><label>WhatsApp Klien (628...)</label><input type="number" id="manual_client_whatsapp" placeholder="628xxx"></div>
+    </div>
+    <h3>Rincian Item Invoice</h3>
+    <div id="item-container-invoice">
+        <div class="card item-row-card">
+            <div class="form-group" style="margin-bottom: 8px;"><label>Nama Produk / Jasa</label><input type="text" class="item_name" list="ref_items_list" oninput="handleItemSelect(this)"></div>
+            <div class="row" style="align-items: flex-start;">
+                <div style="flex: 2;"><label>Spesifikasi</label><textarea class="item_spec" style="resize: vertical;" rows="2"></textarea></div>
+                <div style="flex: 0.6;"><label>Qty</label><input type="number" class="item_qty" value="1" oninput="calculateTotal()"></div>
+                <div style="flex: 1.4;"><label>Harga Satuan</label><input type="number" class="item_price" oninput="calculateTotal()"></div>
+            </div>
+        </div>
+    </div>
+    <div class="row" style="margin-bottom: 15px;">
+        <button class="btn btn-secondary btn-sm" onclick="addItemRow('item-container-invoice')">➕ Tambah Baris</button>
+    </div>
+    <div class="card"><div class="row" style="align-items: center; margin-bottom:0;"><span style="color: var(--text-muted); font-weight:600;">Grand Total:</span><strong id="grandTotal" style="font-size: 1.2rem; color: var(--accent); margin-left: auto;">Rp 0</strong></div></div>
+    <button class="btn btn-accent" id="btn-submit-manual-invoice" style="margin-top:10px; margin-bottom:50px;" onclick="submitManualInvoice()">Simpan & Buat PDF</button>
+</div>
+
+<div id="view-settings" class="spa-view">
             <h2>Pengaturan Profil & Keamanan</h2>
             <div class="card">
                 <h3>Keamanan Kunci Akses</h3>
@@ -340,6 +370,7 @@
     
     const APP_LOGO_URL = "https://cdn-icons-png.flaticon.com/512/3003/3003261.png"; 
     let currentReviseQuoteId = null;
+    let currentManualInvoiceId = null;
 
     if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').catch(err => console.log('SW Gagal:', err)); }); }
     document.addEventListener('gesturestart', function (e) { e.preventDefault(); });
@@ -511,48 +542,53 @@
         }).catch(e => console.log("Polling WA err:", e));
     }
 
-    function openFab() {
-        const activeView = document.querySelector('.spa-view.active').id;
-        
-        if (activeView === 'view-quotation-list' || activeView === 'view-dashboard') {
-            currentReviseQuoteId = null; 
-            document.getElementById('title-input-quotation').innerText = "Buat Penawaran Baru";
-            document.getElementById('client_name').value = '';
-            document.getElementById('client_address').value = '';
-            document.getElementById('client_whatsapp').value = '';
-            document.getElementById('payment_term').value = '';
-            document.getElementById('item-container').innerHTML = `<div class="card item-row-card"><div class="form-group" style="margin-bottom: 8px;"><label>Nama Produk / Jasa</label><input type="text" class="item_name" list="ref_items_list" oninput="handleItemSelect(this)"></div><div class="row" style="align-items: flex-start;"><div style="flex: 2;"><label>Spesifikasi</label><textarea class="item_spec" style="resize: vertical;" rows="2"></textarea></div><div style="flex: 0.6;"><label>Qty</label><input type="number" class="item_qty" value="1" oninput="calculateTotal()"></div><div style="flex: 1.4;"><label>Harga Satuan</label><input type="number" class="item_price" oninput="calculateTotal()"></div></div></div>`;
-            calculateTotal();
-            switchView('view-input-quotation', null);
-        } else if (activeView === 'view-expense') {
-            document.getElementById('exp_deskripsi').value = '';
-            document.getElementById('exp_nominal').value = '';
-            document.getElementById('exp_bukti').value = '';
-            switchView('view-input-expense', null);
-        }
+
+function openFab() {
+    const activeView = document.querySelector('.spa-view.active')?.id;
+
+    if (activeView === 'view-quotation-list' || activeView === 'view-dashboard') {
+        currentReviseQuoteId = null;
+        document.getElementById('title-input-quotation').innerText = "Buat Penawaran Baru";
+        document.getElementById('client_name').value = '';
+        document.getElementById('client_address').value = '';
+        document.getElementById('client_whatsapp').value = '';
+        document.getElementById('payment_term').value = '';
+        document.getElementById('item-container').innerHTML = `<div class="card item-row-card"><div class="form-group" style="margin-bottom: 8px;"><label>Nama Produk / Jasa</label><input type="text" class="item_name" list="ref_items_list" oninput="handleItemSelect(this)"></div><div class="row" style="align-items: flex-start;"><div style="flex: 2;"><label>Spesifikasi</label><textarea class="item_spec" style="resize: vertical;" rows="2"></textarea></div><div style="flex: 0.6;"><label>Qty</label><input type="number" class="item_qty" value="1" oninput="calculateTotal()"></div><div style="flex: 1.4;"><label>Harga Satuan</label><input type="number" class="item_price" oninput="calculateTotal()"></div></div></div>`;
+        calculateTotal();
+        switchView('view-input-quotation', null);
+    } else if (activeView === 'view-invoice-list') {
+        openManualInvoiceForm();
+    } else if (activeView === 'view-expense') {
+        document.getElementById('exp_deskripsi').value = '';
+        document.getElementById('exp_nominal').value = '';
+        document.getElementById('exp_bukti').value = '';
+        switchView('view-input-expense', null);
+    }
+}
+
+
+function switchView(viewId, navElement) {
+    document.querySelectorAll('.spa-view').forEach(view => { view.classList.remove('active'); });
+    if (navElement) { document.querySelectorAll('.nav-item').forEach(item => { item.classList.remove('active'); }); }
+
+    const fab = document.getElementById('fab-add');
+    if (viewId === 'view-input-quotation' || viewId === 'view-input-invoice' || viewId === 'view-input-expense' || viewId === 'view-settings') {
+        fab.style.display = 'none';
+    } else {
+        fab.style.display = 'flex';
     }
 
-    function switchView(viewId, navElement) {
-        document.querySelectorAll('.spa-view').forEach(view => { view.classList.remove('active'); });
-        if(navElement) { document.querySelectorAll('.nav-item').forEach(item => { item.classList.remove('active'); }); }
-        
-        const fab = document.getElementById('fab-add');
-        if(viewId === 'view-input-quotation' || viewId === 'view-input-expense' || viewId === 'view-settings') { 
-            fab.style.display = 'none'; 
-        } else { 
-            fab.style.display = 'flex'; 
-        }
-
-        setTimeout(() => {
-            document.getElementById(viewId).classList.add('active');
-            if(navElement) navElement.classList.add('active');
-            if (viewId === 'view-dashboard') renderDashboardStats();
-            if (viewId === 'view-quotation-list') renderQuotationList();
-            if (viewId === 'view-invoice-list') renderInvoiceList();
-            if (viewId === 'view-expense') renderExpenseList();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }, 10);
-    }
+    setTimeout(() => {
+        const target = document.getElementById(viewId);
+        if (target) target.classList.add('active');
+        if (navElement) navElement.classList.add('active');
+        if (viewId === 'view-dashboard') renderDashboardStats();
+        if (viewId === 'view-quotation-list') renderQuotationList();
+        if (viewId === 'view-invoice-list') renderInvoiceList();
+        if (viewId === 'view-expense') renderExpenseList();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }, 10);
+}
 
     function safeFormatRupiah(val) { if (val === undefined || val === null) return "0"; let num = parseFloat(val); if (isNaN(num)) num = parseFloat(String(val).replace(/\./g, '').replace(/,/g, '.')); return isNaN(num) ? "0" : num.toLocaleString('id-ID'); }
 
@@ -571,9 +607,64 @@
 
     function handleCustomerSelect(el) { const matched = localDB.customers.find(i => i.Nama_Klien === el.value); if (matched) { document.getElementById('client_address').value = matched.Alamat || ''; document.getElementById('client_whatsapp').value = matched.WhatsApp || ''; } }
 
-    function addItemRow() { const container = document.getElementById('item-container'); const newRow = document.createElement('div'); newRow.className = 'card item-row-card'; newRow.style.marginTop = '10px'; newRow.innerHTML = `<div class="form-group" style="margin-bottom: 8px;"><label>Nama Produk / Jasa</label><input type="text" class="item_name" list="ref_items_list" oninput="handleItemSelect(this)"></div><div class="row" style="align-items: flex-start;"><div style="flex: 2;"><label>Spesifikasi</label><textarea class="item_spec" style="resize: vertical;" rows="2"></textarea></div><div style="flex: 0.6;"><label>Qty</label><input type="number" class="item_qty" value="1" oninput="calculateTotal()"></div><div style="flex: 1.4;"><label>Harga Satuan</label><input type="number" class="item_price" oninput="calculateTotal()"></div></div>`; container.appendChild(newRow); }
 
-    function calculateTotal() { let total = 0; const qtys = document.querySelectorAll('.item_qty'), prices = document.querySelectorAll('.item_price'); document.querySelectorAll('.item_name').forEach((name, idx) => { total += (parseFloat(qtys[idx].value) || 0) * (parseFloat(prices[idx].value) || 0); }); document.getElementById('grandTotal').innerText = "Rp " + total.toLocaleString('id-ID'); return total; }
+function buildItemRowHTML(values = {}) {
+    const name = values.name ? String(values.name).replace(/"/g, '&quot;') : "";
+    const spec = values.spec ? String(values.spec).replace(/</g, '&lt;').replace(/>/g, '&gt;') : "";
+    const qty = values.qty !== undefined && values.qty !== null ? values.qty : 1;
+    const price = values.price !== undefined && values.price !== null ? values.price : "";
+    return `<div class="card item-row-card">
+        <div class="form-group" style="margin-bottom: 8px;">
+            <label>Nama Produk / Jasa</label>
+            <input type="text" class="item_name" list="ref_items_list" value="${name}" oninput="handleItemSelect(this)">
+        </div>
+        <div class="row" style="align-items: flex-start;">
+            <div style="flex: 2;">
+                <label>Spesifikasi</label>
+                <textarea class="item_spec" style="resize: vertical;" rows="2">${spec}</textarea>
+            </div>
+            <div style="flex: 0.6;">
+                <label>Qty</label>
+                <input type="number" class="item_qty" value="${qty}" oninput="calculateTotal()">
+            </div>
+            <div style="flex: 1.4;">
+                <label>Harga Satuan</label>
+                <input type="number" class="item_price" value="${price}" oninput="calculateTotal()">
+            </div>
+        </div>
+    </div>`;
+}
+
+function addItemRow(containerId = 'item-container', values = {}) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    const newRow = document.createElement('div');
+    newRow.innerHTML = buildItemRowHTML(values);
+    container.appendChild(newRow.firstElementChild);
+}
+
+function addInvoiceItemRow() {
+    addItemRow('item-container-invoice');
+}
+
+function calculateTotal() {
+    const activeView = document.querySelector('.spa-view.active');
+    if (!activeView) return 0;
+
+    const qtys = activeView.querySelectorAll('.item_qty');
+    const prices = activeView.querySelectorAll('.item_price');
+    let total = 0;
+
+    qtys.forEach((qtyEl, idx) => {
+        const qty = parseFloat(qtyEl.value) || 0;
+        const price = parseFloat(prices[idx]?.value) || 0;
+        total += qty * price;
+    });
+
+    const totalEl = activeView.querySelector('#grandTotal');
+    if (totalEl) totalEl.innerText = "Rp " + total.toLocaleString('id-ID');
+    return total;
+}
 
     function fetchLiveDatabase() {
         if(!API_URL) return;
@@ -705,7 +796,7 @@
             else { invoicePdfAction = `<button class="btn btn-secondary btn-sm" style="width:100%; margin-top:8px; background:var(--primary-soft); color:var(--primary);" onclick="triggerInvoicePdf(event, '${row.invoice_id}')">⚙️ Buat PDF Invoice Resmi</button>`; }
 
             let receiptLinks = ''; paymentsForInv.forEach((p, idx) => { if(p.PDF_Url && p.PDF_Url !== 'FAILED') receiptLinks += `<button class="btn btn-secondary btn-sm" style="font-size: 10px; margin-top:5px;" onclick="window.open('${p.PDF_Url}', '_blank')">📄 Kuitansi ${idx+1}: Rp ${safeFormatRupiah(p.Nominal)}</button>`; });
-            card.innerHTML = `<div class="flex-meta"><span class="id-badge">${row.invoice_id}</span><span class="status-badge status-${row.status}">${row.status}</span></div><div style="font-weight:bold; font-size:15px; margin-bottom:4px; white-space: pre-wrap;">${row.client_name}</div><div style="color:var(--text-muted); font-size:12px;">Ref QTO: ${row.quote_id}</div><div style="margin-top:6px; font-size:13px; color:var(--text-muted);">Total Tagihan: <strong style="color:var(--text);">Rp ${safeFormatRupiah(row.total_amount)}</strong><br>Total Terbayar: <strong style="color:var(--accent);">Rp ${safeFormatRupiah(totalTerbayar)}</strong></div>${invoicePdfAction}${receiptLinks}${manualAction}`;
+            card.innerHTML = `<div class="flex-meta"><span class="id-badge">${row.invoice_id}</span><span class="status-badge status-${row.status}">${row.status}</span></div><div style="font-weight:bold; font-size:15px; margin-bottom:4px; white-space: pre-wrap;">${row.client_name}</div><div style="color:var(--text-muted); font-size:12px;">${String(row.quote_id || '').startsWith('MANUAL-') ? 'Ref Manual: ' + row.quote_id : 'Ref QTO: ' + (row.quote_id || '-')}</div><div style="margin-top:6px; font-size:13px; color:var(--text-muted);">Total Tagihan: <strong style="color:var(--text);">Rp ${safeFormatRupiah(row.total_amount)}</strong><br>Total Terbayar: <strong style="color:var(--accent);">Rp ${safeFormatRupiah(totalTerbayar)}</strong></div>${invoicePdfAction}${receiptLinks}${manualAction}`;
             container.appendChild(card);
         });
     }
@@ -821,6 +912,105 @@
             calculateTotal(); fetchLiveDatabase(); switchView('view-dashboard'); 
         }).finally(() => { btn.disabled = false; btn.innerText = "Simpan & Kirim Penawaran"; });
     }
+
+function generateManualInvoiceId() {
+    const now = new Date();
+    const pad = (n) => String(n).padStart(2, '0');
+    return `INV-MAN-${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+}
+
+function openManualInvoiceForm() {
+    document.getElementById('title-input-invoice').innerText = "Buat Invoice Manual";
+    document.getElementById('manual_invoice_id').value = generateManualInvoiceId();
+    document.getElementById('manual_client_name').value = '';
+    document.getElementById('manual_client_whatsapp').value = '';
+    const container = document.getElementById('item-container-invoice');
+    container.innerHTML = `<div class="card item-row-card"><div class="form-group" style="margin-bottom: 8px;"><label>Nama Produk / Jasa</label><input type="text" class="item_name" list="ref_items_list" oninput="handleItemSelect(this)"></div><div class="row" style="align-items: flex-start;"><div style="flex: 2;"><label>Spesifikasi</label><textarea class="item_spec" style="resize: vertical;" rows="2"></textarea></div><div style="flex: 0.6;"><label>Qty</label><input type="number" class="item_qty" value="1" oninput="calculateTotal()"></div><div style="flex: 1.4;"><label>Harga Satuan</label><input type="number" class="item_price" oninput="calculateTotal()"></div></div></div>`;
+    calculateTotal();
+    switchView('view-input-invoice', null);
+}
+
+function submitManualInvoice() {
+    if (!navigator.onLine || !API_URL) return alert("❌ Membuat Invoice butuh internet.");
+
+    const btn = document.getElementById('btn-submit-manual-invoice');
+    btn.disabled = true;
+    btn.innerText = "Memproses Berkas...";
+
+    const invoiceId = (document.getElementById('manual_invoice_id').value || '').trim() || generateManualInvoiceId();
+    const clientName = (document.getElementById('manual_client_name').value || '').trim();
+    const clientWA = (document.getElementById('manual_client_whatsapp').value || '').trim();
+    const itemContainer = document.getElementById('item-container-invoice');
+
+    const names = itemContainer.querySelectorAll('.item_name');
+    const specs = itemContainer.querySelectorAll('.item_spec');
+    const qtys = itemContainer.querySelectorAll('.item_qty');
+    const prices = itemContainer.querySelectorAll('.item_price');
+
+    const items = [];
+    names.forEach((nameInput, idx) => {
+        const name = nameInput.value.trim();
+        if (!name) return;
+        const spec = specs[idx].value || '';
+        const qty = parseFloat(qtys[idx].value) || 1;
+        const price = parseFloat(prices[idx].value) || 0;
+        items.push({
+            nama_barang: name,
+            spesifikasi: spec,
+            qty: qty,
+            harga: price
+        });
+    });
+
+    if (!clientName) {
+        alert("Nama klien wajib diisi.");
+        btn.disabled = false;
+        btn.innerText = "Simpan & Buat PDF";
+        return;
+    }
+
+    if (items.length === 0) {
+        alert("Minimal 1 item harus diisi.");
+        btn.disabled = false;
+        btn.innerText = "Simpan & Buat PDF";
+        return;
+    }
+
+    const totalAmount = calculateTotal();
+    const manualRef = `MANUAL-${invoiceId.replace(/[^A-Za-z0-9]/g, '').slice(-14)}`;
+
+    fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify({
+            action: "createManualInvoice",
+            data: {
+                invoice_id: invoiceId,
+                quote_id: manualRef,
+                client_name: clientName,
+                client_whatsapp: clientWA,
+                total_amount: totalAmount,
+                items: items,
+                auto_generate_pdf: true
+            }
+        })
+    })
+    .then(res => res.json())
+    .then(res => {
+        if (res.success) {
+            alert(res.message || "Invoice manual berhasil disimpan.");
+            fetchLiveDatabase();
+            switchView('view-invoice-list', document.querySelectorAll('.nav-item')[2]);
+        } else {
+            alert("Gagal: " + res.message);
+        }
+    })
+    .catch(() => alert("Gagal menghubungi server."))
+    .finally(() => {
+        btn.disabled = false;
+        btn.innerText = "Simpan & Buat PDF";
+    });
+}
+
     // ==========================================
 // FITUR KIRIM WA OTOMATIS (INVOICE & KUITANSI)
 // ==========================================
@@ -869,6 +1059,6 @@ function sendWaKuitansi(phone, payId, clientNameRaw, nominal, pdfUrl) {
 }
 
 </script>
-<div style="height: 120px; width: 100%; clear: both;"></div>
+<div style="height: 50px; width: 100%; clear: both;"></div>
 </body>
 </html>
